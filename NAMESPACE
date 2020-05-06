@@ -9,8 +9,7 @@ importFrom("MASS", "lda")
 
 importFrom("MVN", "mvn")
 
-importFrom("graphics", "matplot", "axis", "legend", "title", "barplot", "box", "par", "layout", "abline", "lines", "plot")
-
-importFrom("utils", "capture.output")
+importFrom("graphics", "matplot", "axis", "legend", "title", "barplot", "box", "par", 
+           "layout", "abline", "lines", "plot")
 
 importFrom("stats", "lowess")

@@ -1,7 +1,7 @@
 \name{CANCOR}
 \alias{CANCOR}
 \title{Canonical correlation analysis}
-\description{P SPSS- and SAS-like output for canonical 
+\description{Produces SPSS- and SAS-like output for canonical 
 	correlation analysis. Portions of the code were adapted from James Steiger (www.statpower.net).}
 \usage{CANCOR(data, set1, set2, plot, plotCV, plotcoefs, verbose)}
 \arguments{

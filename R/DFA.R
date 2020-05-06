@@ -285,8 +285,8 @@ if (Ngroups == 2) {
 		colnames(MFWER1)[4:5] <- c('    t1-critical','         t1 decision')
 		DFAoutput[[variables[lupe]]]$MFWER1.sigtest <- MFWER1		
 
-		MFWER2 <- anovaDVoutput[[lupe]]
-		MFWER2 <- MFWER2[,1:3]
+		MFWER2 <- ttestDVoutput[[lupe]]
+		MFWER2 <- MFWER2[,c(1,5,9)]
 		MFWER2[,4] <- round(TCRIT2,4)
 		MFWER2[,5] <- ifelse( abs(MFWER2[,3]) > TCRIT2, 'significant', 'not significant')
 		colnames(MFWER2)[4:5] <- c('    t2-critical','         t2 decision')
@@ -334,54 +334,61 @@ if (Ngroups > 2) {
 
 if (predictive == TRUE | is.null(predictive)) {
 
-	squareTable <- function(x,y) {
-	    Original  <- factor(x, levels = grpnames)
-	    Predicted <- factor(y, levels = grpnames)
-	    table(Original, Predicted)
-	}
+	freqs_OR <- squareTable(var1=donnes[,1], var2=lda.values$class, grpnames)
 	
-	freqs <- squareTable(donnes[,1], lda.values$class)
+	PropOrigCorrect <- round((sum(diag(freqs_OR)) / sum(freqs_OR)),3)
 	
-	PropOrigCorrect <- round((sum(diag(freqs)) / sum(freqs)),3)
+	chi_square_OR <- summary(freqs_OR)
+	PressQ_OR <- PressQ(freqs_OR)
 	
-	chi_square <- summary(freqs)
+	rowfreqs_OR <- margin.table(freqs_OR, 1)
+	colfreqs_OR <- margin.table(freqs_OR, 2)
 	
-	rowfreqs <- margin.table(freqs, 1)
-	colfreqs <- margin.table(freqs, 2)
+	cellprops_OR <- prop.table(freqs_OR)
+	rowprops_OR  <- prop.table(freqs_OR, 1)
+	colprops_OR  <- prop.table(freqs_OR, 2)
 	
-	cellprops <- prop.table(freqs)
-	rowprops  <- prop.table(freqs, 1)
-	colprops  <- prop.table(freqs, 2)
-	
-	kappas_cvo <- kappas(stats::na.omit(cbind(lda.values$class, donnes[,1])))
+	# kappas_cvo <- kappas(stats::na.omit(cbind(lda.values$class, donnes[,1])))
+	# kappas_cvo <- kappas(freqs)
+	  kappas_cvo_OR <- kappas(var1=donnes[,1], var2=lda.values$class, grpnames)
 
 	
 	# Frequencies: Original vs Cross-Validated (leave-one-out cross-validation)
 	
 	# classifications from leave-one-out cross-validation
-	ldaoutputCV <- MASS::lda(x = as.matrix(donnes[,c(2:ncol(donnes))]),
+	ldaoutput_CV <- MASS::lda(x = as.matrix(donnes[,c(2:ncol(donnes))]),
 	   grouping=donnes[,1], prior=priors, CV = TRUE)
 	
-	freqs_cvp <- data.frame(cbind(ldaoutputCV$class, lda.values$class))
-	colnames(freqs_cvp) <-  c("Cross-Validated", "Predicted") 
-	freqsCVP <-  squareTable(ldaoutputCV$class, lda.values$class)
-	colnames(freqsCVP) <- paste(grpnames)
-	rownames(freqsCVP) <- paste(grpnames)
+	# freqs_cvp <- data.frame(cbind(ldaoutput_CV$class, lda.values$class))
+	# colnames(freqs_cvp) <-  c("Cross-Validated", "Predicted") 
+	freqs_CV <-  squareTable(ldaoutput_CV$class, lda.values$class, grpnames)
+	colnames(freqs_CV) <- paste(grpnames)
+	rownames(freqs_CV) <- paste(grpnames)
 
-	PropCrossValCorrect <- sum(diag(freqsCVP)) / sum(freqsCVP)
+	PropCrossValCorrect <- sum(diag(freqs_CV)) / sum(freqs_CV)
 	
-	chi_squareCV <- summary(freqsCVP)
+	chi_square_CV <- summary(freqs_CV)
+	PressQ_CV <- PressQ(freqs_CV)
 
-	rowfreqsCV <- margin.table(freqsCVP, 1)
-	colfreqsCV <- margin.table(freqsCVP, 2)
+	rowfreqs_CV <- margin.table(freqs_CV, 1)
+	colfreqs_CV <- margin.table(freqs_CV, 2)
 	
-	cellpropsCV <- prop.table(freqsCVP)
-	rowpropsCV  <- prop.table(freqsCVP, 1)
-	colpropsCV  <- prop.table(freqsCVP, 2)
+	cellprops_CV <- prop.table(freqs_CV)
+	rowprops_CV  <- prop.table(freqs_CV, 1)
+	colprops_CV  <- prop.table(freqs_CV, 2)
 	
-	kappas_cvoCV <- kappas(stats::na.omit(cbind(ldaoutputCV$class, donnes[,1])))
+	# Agreement (kappas) between the Cross-Validated and Original Group Memberships
+	# kappas_CVO <- kappas(stats::na.omit(cbind(ldaoutput_CV$class, donnes[,1])))
+	# freqs_CV <-  squareTable(ldaoutput_CV$class, donnes[,1])
+	# colnames(freqs_CV) <- paste(grpnames)
+	# rownames(freqs_CV) <- paste(grpnames)
+	# kappas_CVO <- kappas(freqs_CV)
+	kappas_CVO <- kappas(ldaoutput_CV$class, donnes[,1], grpnames)
 
-	kappas_cvpCV <- kappas(stats::na.omit(cbind(ldaoutputCV$class, lda.values$class)))
+	# Agreement (kappas) between the Cross-Validated and Predicted Group Memberships
+	# kappas_CVP <- kappas(stats::na.omit(cbind(ldaoutput_CV$class, lda.values$class)))
+	# kappas_CVP <- kappas(freqs_CV)
+	kappas_CVP <- kappas(ldaoutput_CV$class, lda.values$class, grpnames)
 }
 
 
@@ -452,8 +459,9 @@ if (verbose == TRUE) {
 	print(anovaDVoutput)
 	
 	cat('\n\n\nt-tests and effect sizes for group differences on the discriminant functions:\n\n\n')
+	DFnames <- names(ttestDFoutput)
 	for (lupe in 1:length(ttestDFoutput)) {
-		cat(lsnoms[lupe],'\n\n')
+		cat(DFnames[lupe],'\n\n')
 		print(ttestDFoutput[[lupe]], row.names = FALSE); cat('\n\n')
 	}
 	
@@ -519,6 +527,7 @@ if (verbose == TRUE) {
 	
 		for (lupe in 1:length(ttestDVoutput)) {
 			cat(lsnoms[lupe],'\n\n')
+			cat('\nF =', anovaDVoutput[lupe,2],'   F-critical =', round(FCRIT,4),'    decision =', decisionF,'\n\n')
 			print(DFAoutput[[variables[lupe]]]$MFWER2.sigtest, row.names = FALSE); cat('\n\n')
 		}		
 	}
@@ -530,76 +539,97 @@ if (verbose == TRUE) {
 		
 		cat('\n\nPrior Probabilities for Groups:\n'); print(round(ldaoutput$prior,3))
 		
-		cat('\n\nCross-Tabulation of the Original and Predicted Group Memberships:\n\n'); print(freqs)	
+		cat('\n\nCross-Tabulation of the Original and Predicted Group Memberships:\n\n'); print(freqs_OR)	
 		
 		cat('\n\nProportion of original grouped cases correctly classified:  ', round(PropOrigCorrect,3))
 		
-		cat('\n\n\nChi-square test of independence:\n'); print(chi_square) # chi-square test of indepedence
+		cat('\n\n\nChi-square test of independence:\n'); print(chi_square_OR) # chi-square test of indepedence
+
+		cat('\n\nPress\'s Q significance test of classifiation accuracy:\n')
 		
-		cat('\n\nRow Frequencies:\n\n'); print(rowfreqs) # A frequencies (summed over B) 
+		if (PressQ_OR < 3.8415) { 
+			cat('\nPress\'s Q =', PressQ_OR, ', which is < 3.8415, indicating non-significance')
+		} else if (PressQ_OR > 6.63501) { 
+			cat('\nPress\'s Q =', PressQ_OR, 'which is > 6.63501, indicating p < .01')
+		} else if (PressQ_OR < 6.63501 & PressQ_OR > 3.8415) { 
+			cat('\nPress\'s Q =', PressQ_OR, 'which is > 3.8415, indicating p < .05')
+		}
+				
+		cat('\n\n\nRow Frequencies:\n\n'); print(rowfreqs_OR) # A frequencies (summed over B) 
 	
-		cat('\n\nColumn Frequencies:\n\n'); print(colfreqs) # B frequencies (summed over A)
+		cat('\n\nColumn Frequencies:\n\n'); print(colfreqs_OR) # B frequencies (summed over A)
 		
-		cat('\n\nCell Proportions:\n\n'); print(round(cellprops,2))
+		cat('\n\nCell Proportions:\n\n'); print(round(cellprops_OR,2))
 	
-		cat('\n\nRow-Based Proportions:\n\n'); print(round(rowprops,2)) 
+		cat('\n\nRow-Based Proportions:\n\n'); print(round(rowprops_OR,2)) 
 	
-		cat('\n\nColumn-Based Proportions:\n\n'); print(round(colprops,2)) 
+		cat('\n\nColumn-Based Proportions:\n\n'); print(round(colprops_OR,2)) 
 		
-		cat('\n\nAgreement (kappas) between the Predicted and Original Group Memberships:\n\n'); print(kappas_cvo,3)
+		cat('\n\nAgreement (kappas) between the Predicted and Original Group Memberships:\n\n'); print(kappas_cvo_OR,3)
 			
 		# Frequencies: Original vs Cross-Validated (leave-one-out cross-validation)
 		
-		cat('\n\n\n\nCross-Tabulation of the Cross-Validated and Predicted Group Memberships:\n\n'); print(freqsCVP)	
+		cat('\n\n\n\nCross-Tabulation of the Cross-Validated and Predicted Group Memberships:\n\n'); print(freqs_CV)	
 		
 		cat('\n\nProportion of cross-validated grouped cases correctly classified:  ', round(PropCrossValCorrect,3))
 		
-		cat('\n\nChi-square test of indepedence:\n'); print(chi_squareCV) # chi-square test of indepedence
+		cat('\n\nChi-square test of indepedence:\n'); print(chi_square_CV) # chi-square test of indepedence
 		
-		cat('\n\nRow Frequencies:\n\n'); print(rowfreqsCV) # A frequencies (summed over B) 
+		cat('\n\nPress\'s Q significance test of classifiation accuracy:\n')
+		
+		if (PressQ_CV < 3.8415) { 
+			cat('\nPress\'s Q =', PressQ_CV, ', which is < 3.8415, indicating non-significance')
+		} else if (PressQ_CV > 6.63501) { 
+			cat('\nPress\'s Q =', PressQ_CV, 'which is > 6.63501, indicating p < .01')
+		} else if (PressQ_CV < 6.63501 & PressQ_CV > 3.8415) { 
+			cat('\nPress\'s Q =', PressQ_CV, 'which is > 3.8415, indicating p < .05')
+		}
+				
+		cat('\n\n\nRow Frequencies:\n\n'); print(rowfreqs_CV) # A frequencies (summed over B) 
 	
-		cat('\n\nColumn Frequencies:\n\n'); print(colfreqsCV) # B frequencies (summed over A)
+		cat('\n\nColumn Frequencies:\n\n'); print(colfreqs_CV) # B frequencies (summed over A)
 		
-		cat('\n\nCell Proportions:\n\n'); print(round(cellpropsCV,2))
+		cat('\n\nCell Proportions:\n\n'); print(round(cellprops_CV,2))
 	
-		cat('\n\nRow-Based Proportions:\n\n'); print(round(rowpropsCV,2))
+		cat('\n\nRow-Based Proportions:\n\n'); print(round(rowprops_CV,2))
 		
-		cat('\n\nColumn-Based Proportions:\n\n'); print(round(colpropsCV,2)) 
+		cat('\n\nColumn-Based Proportions:\n\n'); print(round(colprops_CV,2)) 
 		
 		cat('\n\nAgreement (kappas) between the Cross-Validated and Original Group Memberships:\n\n')
-		print(kappas_cvoCV)
+		print(kappas_CVO)
 		
 		cat('\n\nAgreement (kappas) between the Cross-Validated and Predicted Group Memberships:\n\n')
-		print(kappas_cvpCV,3)
+		print(kappas_CVP,3)
 		
 		cat('\n\n\n')	
 		
-		DFAoutput$ldaoutputCV <- ldaoutputCV
-		DFAoutput$freqs <- freqs
+		DFAoutput$ldaoutput_CV <- ldaoutput_CV
+		DFAoutput$freqs_OR <- freqs_OR
 		DFAoutput$PropOrigCorrect <- PropOrigCorrect
-		DFAoutput$chi_square <- chi_square
-		DFAoutput$rowfreqs <- rowfreqs
-		DFAoutput$colfreqs <- colfreqs
-		DFAoutput$cellprops <- cellprops
-		DFAoutput$rowprops <- rowprops
-		DFAoutput$colprops <- colprops
-		DFAoutput$kappas_cvo <- kappas_cvo
-		DFAoutput$freqsCVP <- freqsCVP
+		DFAoutput$chi_square_OR <- chi_square_OR
+		DFAoutput$PressQ_OR <- PressQ_OR
+		DFAoutput$rowfreqs_OR <- rowfreqs_OR
+		DFAoutput$colfreqs_OR <- colfreqs_OR
+		DFAoutput$cellprops_OR <- cellprops_OR
+		DFAoutput$rowprops_OR <- rowprops_OR
+		DFAoutput$colprops_OR <- colprops_OR
+		DFAoutput$kappas_cvo_OR <- kappas_cvo_OR
+		DFAoutput$freqs_CV <- freqs_CV
 		DFAoutput$PropCrossValCorrect <- PropCrossValCorrect
-		DFAoutput$chi_squareCV <- chi_squareCV
-		DFAoutput$rowfreqsCV <- rowfreqsCV
-		DFAoutput$colfreqsCV <- colfreqsCV
-		DFAoutput$cellpropsCV <- cellpropsCV
-		DFAoutput$rowpropsCV <- rowpropsCV
-		DFAoutput$colpropsCV <- colpropsCV
-		DFAoutput$kappas_cvoCV <- kappas_cvoCV
-		DFAoutput$kappas_cvpCV <- kappas_cvpCV		
+		DFAoutput$chi_square_CV <- chi_square_CV
+		DFAoutput$PressQ_CV <- PressQ_CV
+		DFAoutput$rowfreqs_CV <- rowfreqs_CV
+		DFAoutput$colfreqs_CV <- colfreqs_CV
+		DFAoutput$cellprops_CV <- cellprops_CV
+		DFAoutput$rowprops_CV <- rowprops_CV
+		DFAoutput$colprops_CV <- colprops_CV
+		DFAoutput$kappas_CVO <- kappas_CVO
+		DFAoutput$kappas_CVP <- kappas_CVP		
 	}
 }
 
 return(invisible(DFAoutput))
 
 }
-
 
 

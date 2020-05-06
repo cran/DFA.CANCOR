@@ -1,7 +1,7 @@
 \name{homogeneity}
 \alias{homogeneity}
 \title{Homogeneity of variances and covariances}
-\description{P tests of the homogeneity of variances and covariances.}
+\description{Produces tests of the homogeneity of variances and covariances.}
 \usage{homogeneity(data, groups, variables, verbose)}
 \arguments{
 \item{data}{

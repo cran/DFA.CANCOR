@@ -1,5 +1,6 @@
 
 
+
 linquad <- function(iv, dv) {
 
 # uses lm for the linear and quadratic association between 2 continous variables
@@ -98,14 +99,20 @@ return(invisible(umvnoutput))
 
 
 
+squareTable <- function(var1, var2, grpnames) {
+    Original  <- factor(var1, levels = grpnames)
+    Predicted <- factor(var2, levels = grpnames)
+    table(Original, Predicted)
+}
 
 
-kappa.cohen <- function (kapdon) {
+
+kappa.cohen <- function (var1, var2, grpnames) {
 
 	# the data for this function (kapdon) are the category values for each of 2 columns,
 	# but the analyses are performed on the contingency table	
 
-	kapdonCT <- table(kapdon[,1],kapdon[,2])  
+	kapdonCT <- squareTable(var1, var2, grpnames); kapdonCT
 
 	# based on Valiquette 1994 BRM, Table 1
 	n <- sum(kapdonCT)  # Sum of Matrix elements
@@ -132,7 +139,7 @@ kappa.cohen <- function (kapdon) {
 	    # Psychological Bulletin, 86, 974-977
 	}
 
-	zkappa <- kappa / sqrt(var)
+	zkappa <- kappa / sqrt(    abs(var)     )
 	
 	sig <- round(pnorm(abs(zkappa),lower.tail = FALSE),5) * 2 # 2-tailed test
 
@@ -183,7 +190,9 @@ kappa.cohen <- function (kapdon) {
 # Fleiss, J.L. (1971). Measuring nominal scale agreement among many raters. Psychological Bul- letin, 76, 378-382. 
 # Fleiss, J.L., Levin, B., & Paik, M.C. (2003). Statistical Methods for Rates and Proportions, 3rd Edition. New York: John Wiley & Sons. 
 
-kappa.fleiss <- function(kapdon) {
+kappa.fleiss <- function(var1, var2) {
+
+	kapdon <- cbind(var1, var2)
 	
 	# the data for this function (kapdon) are the category values for each column,
 	# but the analyses are performed on a count matrix (not a contin table) = the fleissmat below	
@@ -204,7 +213,7 @@ kappa.fleiss <- function(kapdon) {
 	# sekj <- sqrt(2/c) 
 	# zkj <- kj / sekj
 	# pkj <- round(pnorm(abs(zkj),lower.tail = FALSE),5) * 2  # 2-tailed test
-	k <- sum(b*kj) / d  # Fleiss's (overall) kappa
+	k <- sum(b*kj, na.rm=TRUE) / d  # Fleiss's (overall) kappa
 	sek <- sqrt(2*(d^2-sum(b *(1-2 *pj))))/sum(b *sqrt(c)) 	
 	#ci <- k+(c(-1,1) * (pnorm(zkj)) * sek) 	
 	zk <- k / sek  # normalized kappa
@@ -217,10 +226,10 @@ kappa.fleiss <- function(kapdon) {
 
 
 
-kappas <- function(grpdat) {
+kappas <- function(var1, var2, grpnames) {
 	
-	kc <- kappa.cohen(grpdat)  
-	kf <- kappa.fleiss(grpdat)
+	kc <- kappa.cohen(var1, var2, grpnames)  
+	kf <- kappa.fleiss(var1, var2)
 	kappasOUT <- rbind(kc,kf)
 	kappasOUT[,1:2] <- round(kappasOUT[,1:2],3)
 	kappasOUT[,3] <- round(kappasOUT[,3],5)	
@@ -245,6 +254,53 @@ kappas <- function(grpdat) {
 
 
 
+# Press' Q 
+
+# When DFA is used to classify
+# individuals in the second or holdout sample. The percentage of cases that are
+# correctly classified reflects the degree to which the samples yield consistent
+# information. The question, then is what proportion of cases should be correctly
+# classified? This issue is more complex than many researchers acknowledge. To
+# illustrate this complexity, suppose that 75% of individuals are Christian, 15%
+# are Muslim, and 10% are Sikhs. Even without any information, you could thus
+# correctly classify 75% of all individuals by simply designating them all as
+# Christian. In other words, the percentage of correctly classified cases should
+# exceed 75%.
+
+# Nonetheless, a percentage of 76% does not indicate that classification is
+# significantly better than chance. To establish this form of significance, you
+# should invoke Press' Q statistic. 
+
+# Compute the critical value, which equals the chi-square value at 1 degree of
+# freedom. You should probably let alpha equal 0.05. When Q exceeds this critical
+# value, classification can be regarded as significantly better than chance,
+# thereby supporting cross-validation.
+
+# The researcher can use Press's Q statistic to compare with the chi-square critical 
+# value of 6.63 with 1 degree of freedom (p < .01). If Q exceeds this critical value, 
+# the classification can be regarded as significantly better than chance. 
+
+# Press'sQ = (N _ (n*K))^2 / (N * (K - 1))
+
+# where
+# N = total sample size
+# n = number of observations correctly classified 
+# K = number of groups_
+# Given that Press's Q = 29.57 > 6.63, it can be concluded that the classification 
+# results exceed the classification accuracy expected by chance at a statistically 
+# significant level (p < .01). 
+
+
+PressQ <- function(freqs) {
+	
+	N <- sum(colSums(freqs))
+	n <- sum(diag(freqs))
+	k <- ncol(freqs)
+	PressQ <- (N - (n*k))^2 / (N * (k - 1))
+	
+	return(invisible(PressQ))
+}
+
 
 
 
@@ -257,7 +313,7 @@ kappas <- function(grpdat) {
 # the groups variable can be categorical
 # the function compares the lowest & highest values of the group variable
 
-# var.equal -- a logical variable indicating whether to treat the two variances as being equal. 
+# varest -- a logical variable indicating whether to treat the two variances as being equal. 
 # If TRUE then the pooled variance is used to estimate the variance otherwise the  
 # Welch (or Satterthwaite) approximation to the degrees of freedom is used.
 
@@ -595,5 +651,3 @@ Rao <- function(rho, Ncases, p, q) {
   
    
    
-  
-  

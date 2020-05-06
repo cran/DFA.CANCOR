@@ -1,7 +1,7 @@
 \name{DFA}
 \alias{DFA}
 \title{Discriminant function analysis}
-\description{P SPSS- and SAS-like output for linear discriminant 
+\description{Produces SPSS- and SAS-like output for linear discriminant 
 	function analysis. It uses functions from the MASS package.}
 \usage{DFA(data, groups, variables, plot, predictive, priorprob, verbose)}
 \arguments{
@@ -63,25 +63,27 @@
   \item{MFWER1.sigtest}{Significance tests when controlling the MFWER by (only) carrying out multiple t tests}
   \item{MFWER2.sigtest}{Significance tests for the two-stage approach to controling the MFWER}
   \item{ldaoutputCV}{Classifications from leave-one-out cross-validations}
-  \item{freqs}{Cross-Tabulation of the Original and Predicted Group Memberships}
+  \item{freqs_OR}{Cross-Tabulation of the Original and Predicted Group Memberships}
   \item{PropOrigCorrect}{Proportion of original grouped cases correctly classified}
-  \item{chi_square}{Chi-square test of independence}
-  \item{rowfreqs}{Row Frequencies}
-  \item{colfreqs}{Column Frequencies}
-  \item{cellprops}{Cell Proportions}
-  \item{rowprops}{Row-Based Proportions}
-  \item{colprops}{Column-Based Proportions}
-  \item{kappas_cvo}{Agreement (kappas) between the Predicted and Original Group Memberships}
-  \item{freqsCVP}{Cross-Tabulation of the Cross-Validated and Predicted Group Memberships}
+  \item{chi_square_OR}{Chi-square test of independence}
+  \item{PressQ_OR}{Press's Q significance test of classifiation accuracy for original vs. predicted group memberships}
+  \item{rowfreqs_OR}{Row Frequencies}
+  \item{colfreqs_OR}{Column Frequencies}
+  \item{cellprops_OR}{Cell Proportions}
+  \item{rowprops_OR}{Row-Based Proportions}
+  \item{colprops_OR}{Column-Based Proportions}
+  \item{kappas_cvo_OR}{Agreement (kappas) between the Predicted and Original Group Memberships}
+  \item{freqs_CV}{Cross-Tabulation of the Cross-Validated and Predicted Group Memberships}
   \item{PropCrossValCorrect}{Proportion of cross-validated grouped cases correctly classified}
-  \item{chi_squareCV}{Chi-square test of indepedence}
-  \item{rowfreqsCV}{Row Frequencies}
-  \item{colfreqsCV}{Column Frequencies}
-  \item{cellpropsCV}{Cell Proportions}
-  \item{rowpropsCV}{Row-Based Proportions}
-  \item{colpropsCV}{Column-Based Proportions}
+  \item{chi_square_CV}{Chi-square test of indepedence}
+  \item{PressQ_CV}{Press's Q significance test of classifiation accuracy for cross-validated vs. predicted group memberships}
+  \item{rowfreqs_CV}{Row Frequencies}
+  \item{colfreqs_CV}{Column Frequencies}
+  \item{cellprops_CV}{Cell Proportions}
+  \item{rowprops_CV}{Row-Based Proportions}
+  \item{colprops_CV}{Column-Based Proportions}
   \item{kappas_cvoCV}{Agreement (kappas) between the Cross-Validated and Original Group Membership}
-  \item{kappas_cvpCV}{Agreement (kappas) between the Cross-Validated and Predicted Group Memberships}
+  \item{kappas_CVP}{Agreement (kappas) between the Cross-Validated and Predicted Group Memberships}
 }
 \references{
        {Bird, K. D., & Hadzi-Pavlovic, D. (2013). Controlling the maximum familywise Type I error 

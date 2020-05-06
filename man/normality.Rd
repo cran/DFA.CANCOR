@@ -1,7 +1,7 @@
 \name{normality}
 \alias{normality}
 \title{Univariate and multivariate normality}
-\description{P tests of univariate and multivariate normality using the MVN package.}
+\description{Produces tests of univariate and multivariate normality using the MVN package.}
 \usage{normality(data, groups, variables, verbose)}
 \arguments{
   \item{data}{

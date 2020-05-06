@@ -55,8 +55,8 @@ if (verbose == TRUE) {
 	print(round(coefs,5))		
 }		
 
-Xmin <- min(data[,idv])
-Xmax <- max(data[,idv])
+Xmin <- min(dontemp[,1])
+Xmax <- max(dontemp[,1])
 IVforpred <- seq(Xmin, Xmax, ((Xmax-Xmin) / 100))						
 DVpredicted <- predict(modquad,list(IV=IVforpred, IVsqd=IVforpred^2))
 
