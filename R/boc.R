@@ -1,5 +1,39 @@
 
 
+# rounds numeric columns in a matrix
+# numeric columns named 'p' or 'plevel' are rounded to round_p places
+# numeric columns not named 'p' are rounded to round_non_p places
+
+round_boc <- function(donnes, round_non_p = 3, round_p = 5) {
+	
+	# identify the numeric columns
+	#	numers <- apply(donnes, 2, is.numeric)  # does not work consistently 
+	for (lupec in 1:ncol(donnes)) {
+
+		if (is.numeric(donnes[,lupec]) == TRUE) 
+		
+			if (colnames(donnes)[lupec] == 'p' | colnames(donnes)[lupec] == 'plevel')  {
+				donnes[,lupec] <- round(donnes[,lupec],round_p)
+			} else {
+				donnes[,lupec] <- round(donnes[,lupec],round_non_p)				
+			}		
+		# if (is.numeric(donnes[,lupec]) == FALSE) numers[lupec] = 'FALSE'		
+		# if (colnames(donnes)[lupec] == 'p') numers[lupec] = 'FALSE'		
+	}
+	
+	# # set the p column to FALSE
+	# numers_not_p <- !names(numers) %in% "p"
+	
+#	donnes[,numers_not_p] = round(donnes[,numers_not_p],round_non_p) 
+	
+#	if (any(colnames(donnes) == 'p'))  donnes[,'p'] = round(donnes[,'p'],round_p) 
+
+	return(invisible(donnes))
+}
+
+
+
+
 
 linquad <- function(iv, dv) {
 
@@ -304,16 +338,18 @@ PressQ <- function(freqs) {
 
 
 
+
+
 ############################# T tests  ############################################################
 
 
-"ttestboc" <-  function (donnesT, varest=FALSE) {
+"ttestboc" <-  function (donnesT, var.equal=FALSE) {
 	
 # reads raw data; the groups variable is in 1st column; the DV(s) are in the subsequent columns
 # the groups variable can be categorical
 # the function compares the lowest & highest values of the group variable
 
-# varest -- a logical variable indicating whether to treat the two variances as being equal. 
+# var.equal -- a logical variable indicating whether to treat the two variances as being equal. 
 # If TRUE then the pooled variance is used to estimate the variance otherwise the  
 # Welch (or Satterthwaite) approximation to the degrees of freedom is used.
 
@@ -323,12 +359,14 @@ PressQ <- function(freqs) {
 
 grpnames <- as.vector(as.matrix(donnesT[,1])) # group names, in the same order as in the data matrix
 grpnames <- unique(grpnames)
-grpnums  <- seq(1:length(grpnames))
+#grpnums <- seq(1:length(grpnames))
 
 donnesT[,1] <- as.numeric(donnesT[,1])
 
 resultsM <- matrix(-9999,1,13)
-ngroups <- max(donnesT[,1])
+#ngroups <- max(donnesT[,1])
+ngroups <- length(grpnames)
+grpnoms <- cbind(-9999,-9999)
 
 for (lupe1 in 1:(ngroups-1)) {
 	for (lupe2 in (lupe1+1):ngroups) {
@@ -337,25 +375,24 @@ for (lupe1 in 1:(ngroups-1)) {
 		
 		newdon = data.frame(dum[,1], dum[,2])
 
+		# newdon <- stats::na.omit(cbind( as.numeric(donnesT[,1]), donnesT[,2] ))
 
-#		newdon <- stats::na.omit(cbind( as.numeric(donnesT[,1]), donnesT[,2] ))
+		# groupmin <- min(newdon[,1])
+		# groupmax <- max(newdon[,1])
 
-		groupmin <- min(newdon[,1])
-		groupmax <- max(newdon[,1])
+		mgrp1 <- mean(subset(newdon[,2],newdon[,1]==grpnames[lupe1]))
+		mgrp2 <- mean(subset(newdon[,2],newdon[,1]==grpnames[lupe2]))
 
-		mgrp1 <- mean(subset(newdon[,2],newdon[,1]==groupmin))
-		mgrp2 <- mean(subset(newdon[,2],newdon[,1]==groupmax))
+		sdgrp1 <- stats::sd(subset(newdon[,2],newdon[,1]==grpnames[lupe1]))
+		sdgrp2 <- stats::sd(subset(newdon[,2],newdon[,1]==grpnames[lupe2]))
 
-		sdgrp1 <- stats::sd(subset(newdon[,2],newdon[,1]==groupmin))
-		sdgrp2 <- stats::sd(subset(newdon[,2],newdon[,1]==groupmax))
-
-		N1 <- nrow(subset(newdon,newdon[,1]==groupmin))
-		N2 <- nrow(subset(newdon,newdon[,1]==groupmax))
+		N1 <- nrow(subset(newdon,newdon[,1]==grpnames[lupe1]))
+		N2 <- nrow(subset(newdon,newdon[,1]==grpnames[lupe2]))
 
 		SE1 <- sdgrp1 / sqrt(N1)
 		SE2 <- sdgrp2 / sqrt(N2)
 
-		tresults <- stats::t.test(newdon[,2]~newdon[,1],data=newdon, var.equal=varest) 
+		tresults <- stats::t.test(newdon[,2]~newdon[,1],data=newdon, var.equal=var.equal) 
 		tgroups  <- tresults$statistic
 		dfgroups <- tresults$parameter
 		plevel   <- tresults$p.value
@@ -366,29 +403,38 @@ for (lupe1 in 1:(ngroups-1)) {
 		# d effect size -- from R&R p 303 General Formula  best, because covers = & not = Ns
 		deffsiz = (tgroups * (N1+N2)) / ( sqrt(dfgroups) * sqrt(N1*N2) )
 
-		results <- cbind( groupmin, N1, round(mgrp1,2), round(sdgrp1,2), groupmax, N2, 
-						  round(mgrp2,2), round(sdgrp2,2), round(tgroups,2), round(dfgroups,2), 
-						  round(plevel,5), round(reffsiz,2), round(abs(deffsiz),2) )
+		# results <- cbind( groupmin, N1, round(mgrp1,2), round(sdgrp1,2), groupmax, N2, 
+						  # round(mgrp2,2), round(sdgrp2,2), round(tgroups,2), round(dfgroups,2), 
+						  # round(plevel,5), round(reffsiz,2), round(abs(deffsiz),2) )
+
+		results <- cbind( lupe1, N1, mgrp1, sdgrp1, lupe2, N2, mgrp2, sdgrp2,
+		                  tgroups, dfgroups, plevel, reffsiz, abs(deffsiz) )
 
 		results <- as.matrix(cbind(results))
 		resultsM <- rbind( resultsM, results)
+		
+		grpnoms <- rbind( grpnoms, cbind(grpnames[lupe1], grpnames[lupe2]))
 	}  	
 }
 
-resultsM2 <- data.frame(resultsM)
+grpnoms <- grpnoms[-c(1),]
 
-for (lupe in 2:nrow(resultsM)) {
-	resultsM2[lupe,1] <- grpnames[resultsM[lupe,1]]
-	resultsM2[lupe,5] <- grpnames[resultsM[lupe,5]]
+resultsM2 <- data.frame(resultsM[-1,,drop=FALSE])
+
+for (lupe in 1:nrow(resultsM2)) {
+	resultsM2[lupe,1] <- grpnoms[resultsM2[lupe,1]]
+	resultsM2[lupe,5] <- grpnoms[resultsM2[lupe,5]]
 }
-rownames(resultsM2) <- c()
-colnames(resultsM2) <- c("Group"," N1"," Mean1","  SD1"," Group"," N2"," Mean2","  SD2",
-                         "     t","    df","        p","  r effsize","  d effsize")
 
-resultsM2 <- resultsM2[-c(1),]
+rownames(resultsM2) <- c()
+colnames(resultsM2) <- c("Group","N","Mean","SD","Group","N","Mean","SD",
+                         "t","df","p","r effsize","d effsize")
 
 return(invisible(as.data.frame(resultsM2)))
 }
+
+
+
 
 
 

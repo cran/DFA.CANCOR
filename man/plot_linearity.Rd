@@ -3,7 +3,8 @@
 \title{Plot for linearity}
 \description{Plots the linear, quadratic, and loess regression lines for the
 	association between two continuous variables.}
-\usage{plot_linearity(data, idv, dv, groups=NULL, groupNAME=NULL, verbose = TRUE)}
+\usage{plot_linearity(data, idv, dv, groups=NULL, groupNAME=NULL, legposition=NULL, 
+	                  leginset=NULL, verbose=TRUE)}
 \arguments{
   \item{data}{
   \code{}A dataframe where the rows are cases & the columns are the variables.}
@@ -23,6 +24,15 @@
   	variable that identifies the subset group whose data will be used 
   	for the analyses, \cr e.g., groupNAME = 1.}
   	    
+  \item{legposition}{
+  \code{}(optional) The position of the legend, as specified by one of the
+         \cr following possible keywords: "bottomright", "bottom", "bottomleft",  
+  		 \cr "left", "topleft", "top", "topright", "right" or "center".}
+
+  \item{leginset}{
+  \code{}(optional) The inset distance(s) of the legend from the margins as a  
+  		 \cr fraction of the plot region when legend is placed by keyword.}
+  	      	    
   \item{verbose}{
   \code{}Should detailed results be displayed in the console? 
   		\cr The options are: TRUE (default) or FALSE.}

@@ -1,6 +1,6 @@
 
-
-plot_linearity <- function(data, idv, dv, groups=NULL, groupNAME=NULL, verbose = TRUE) {
+plot_linearity <- function(data, idv, dv, groups=NULL, groupNAME=NULL, 
+                           legposition=NULL, leginset=NULL, verbose=TRUE) {
 
 # plots for assessing linearity between 2 continous variables
 # uses lm for the linear and quadratic associations between 2 continous variables & plots the equation
@@ -65,11 +65,17 @@ loessdat <- lowess(cbind(IV, DV))  # loess plot data
 plot(IV, DV, pch=16, xlab=idv,ylab=dv,cex.lab=1.3,col="black")
 abline(lm(DV ~ IV), col = "red", lwd = 2)
 lines(IVforpred, DVpredicted, col = "blue", lwd = 2)
-lines(loessdat$x, loessdat$y, col = "green", lwd = 2)			
-graphics::legend("topright",c("Linear","Quadratic","Loess"),bty="n",lty=1,
-				 lwd=2,inset=c(.60,.03),col=c("red","blue","green"))
+lines(loessdat$x, loessdat$y, col = "green", lwd = 2)	
 
+if (is.null(legposition) | is.null(leginset)) { 
+	graphics::legend("topright",c("Linear","Quadratic","Loess"), bty="n", lty=1,
+					 lwd=2, inset=c(.60,.03), col=c("red","blue","green"))
+	} else {
+	graphics::legend(legposition,c("Linear","Quadratic","Loess"),bty="n",lty=1,
+					 lwd=2, inset=leginset, col=c("red","blue","green"))
+}
 
+		
 plot_linearityOutput$plotdata$idv <- IV
 plot_linearityOutput$plotdata$idvsqd <- IVsqd
 plot_linearityOutput$plotdata$dv  <- DV

@@ -72,7 +72,7 @@ if (is.null(groups) == TRUE) {
 			linquadOut <- linquad(dontemp[,1],dontemp[,2])
 			
 			lname <- paste(paste(idvs[lupevars]),'_(X)_&_', paste(dv),'_(Y))',sep='')
-			linearityOutput[[lname]]$coefs <- linquadOut
+#			linearityOutput[[lname]]$coefs <- linquadOut
 					
 			if (verbose == TRUE) {		
 				linquadOut <- cbind(round(linquadOut[,1:4],2),round(linquadOut[,5],6))
