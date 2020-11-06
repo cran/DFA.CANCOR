@@ -357,6 +357,7 @@ PressQ <- function(freqs) {
 
 #cat("\n\nGroups t-test:\n")
 
+
 grpnames <- as.vector(as.matrix(donnesT[,1])) # group names, in the same order as in the data matrix
 grpnames <- unique(grpnames)
 #grpnums <- seq(1:length(grpnames))
@@ -375,19 +376,17 @@ for (lupe1 in 1:(ngroups-1)) {
 		
 		newdon = data.frame(dum[,1], dum[,2])
 
-		# newdon <- stats::na.omit(cbind( as.numeric(donnesT[,1]), donnesT[,2] ))
+		groupmin <- min(newdon[,1])
+		groupmax <- max(newdon[,1])
 
-		# groupmin <- min(newdon[,1])
-		# groupmax <- max(newdon[,1])
+		mgrp1 <- mean(subset(newdon[,2],newdon[,1]==groupmin))
+		mgrp2 <- mean(subset(newdon[,2],newdon[,1]==groupmax))
 
-		mgrp1 <- mean(subset(newdon[,2],newdon[,1]==grpnames[lupe1]))
-		mgrp2 <- mean(subset(newdon[,2],newdon[,1]==grpnames[lupe2]))
+		sdgrp1 <- stats::sd(subset(newdon[,2],newdon[,1]==groupmin))
+		sdgrp2 <- stats::sd(subset(newdon[,2],newdon[,1]==groupmax))
 
-		sdgrp1 <- stats::sd(subset(newdon[,2],newdon[,1]==grpnames[lupe1]))
-		sdgrp2 <- stats::sd(subset(newdon[,2],newdon[,1]==grpnames[lupe2]))
-
-		N1 <- nrow(subset(newdon,newdon[,1]==grpnames[lupe1]))
-		N2 <- nrow(subset(newdon,newdon[,1]==grpnames[lupe2]))
+		N1 <- nrow(subset(newdon,newdon[,1]==groupmin))
+		N2 <- nrow(subset(newdon,newdon[,1]==groupmax))
 
 		SE1 <- sdgrp1 / sqrt(N1)
 		SE2 <- sdgrp2 / sqrt(N2)
@@ -403,11 +402,7 @@ for (lupe1 in 1:(ngroups-1)) {
 		# d effect size -- from R&R p 303 General Formula  best, because covers = & not = Ns
 		deffsiz = (tgroups * (N1+N2)) / ( sqrt(dfgroups) * sqrt(N1*N2) )
 
-		# results <- cbind( groupmin, N1, round(mgrp1,2), round(sdgrp1,2), groupmax, N2, 
-						  # round(mgrp2,2), round(sdgrp2,2), round(tgroups,2), round(dfgroups,2), 
-						  # round(plevel,5), round(reffsiz,2), round(abs(deffsiz),2) )
-
-		results <- cbind( lupe1, N1, mgrp1, sdgrp1, lupe2, N2, mgrp2, sdgrp2,
+		results <- cbind( groupmin, N1, mgrp1, sdgrp1, groupmax, N2, mgrp2, sdgrp2,
 		                  tgroups, dfgroups, plevel, reffsiz, abs(deffsiz) )
 
 		results <- as.matrix(cbind(results))
@@ -421,10 +416,8 @@ grpnoms <- grpnoms[-c(1),]
 
 resultsM2 <- data.frame(resultsM[-1,,drop=FALSE])
 
-for (lupe in 1:nrow(resultsM2)) {
-	resultsM2[lupe,1] <- grpnoms[resultsM2[lupe,1]]
-	resultsM2[lupe,5] <- grpnoms[resultsM2[lupe,5]]
-}
+resultsM2[,1] <- grpnoms[,1]
+resultsM2[,5] <- grpnoms[,2]
 
 rownames(resultsM2) <- c()
 colnames(resultsM2) <- c("Group","N","Mean","SD","Group","N","Mean","SD",
