@@ -416,8 +416,11 @@ grpnoms <- grpnoms[-c(1),]
 
 resultsM2 <- data.frame(resultsM[-1,,drop=FALSE])
 
-resultsM2[,1] <- grpnoms[,1]
-resultsM2[,5] <- grpnoms[,2]
+# resultsM2[,1] <- grpnoms[,1]   # pre April 2021
+# resultsM2[,5] <- grpnoms[,2]   # pre April 2021
+
+resultsM2[,1] <- grpnoms[1]
+resultsM2[,5] <- grpnoms[2]
 
 rownames(resultsM2) <- c()
 colnames(resultsM2) <- c("Group","N","Mean","SD","Group","N","Mean","SD",

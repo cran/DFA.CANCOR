@@ -13,6 +13,9 @@ if (anyNA(donnes) == TRUE) {
 	NAflag = FALSE
 }
 
+
+
+
 grpnames <- as.vector(as.matrix(donnes[groups])) # group names, in the same order as in the data matrix
 grpnames <- unique(grpnames)
 grpnums  <- seq(1:length(grpnames))
@@ -21,7 +24,8 @@ Ndvs <- ncol(donnes) - 1
 Ncases <- nrow(donnes)
 
 
-if (is.factor(donnes[,1]) == FALSE)  donnes[,1] <- factor(donnes[,1], ordered = FALSE, labels=grpnames)
+if (is.factor(donnes[,1]) == FALSE)  donnes[,1] <- factor(donnes[,1], ordered = FALSE, 
+                                                          labels=grpnames, levels=grpnames)
 
 donnes <- as.data.frame(donnes)
 
@@ -106,17 +110,17 @@ rho <- evals[,4]
 NCVs <- nrow(evals)
 
 mv_Wilk <- Wilk(rho=rho, Ncases=Ncases, p = NCVs, q = Ndvs)
-colnames(mv_Wilk) <- c('Wilk\'s Lambda', 'F-approx. ', 'df1', 'df2', 'p')
+colnames(mv_Wilk) <- c('Wilk\'s Lambda', 'F-approx.', 'df1', 'df2', 'p')
 rownames(mv_Wilk) <- paste(1:nrow(mv_Wilk), paste("through ", nrow(mv_Wilk), sep = ""))
 # print(round(mv_Wilk), print.gap=4); cat('\n\n')
 
 mv_Pillai <- Pillai(rho=rho, Ncases=Ncases, p = NCVs, q = Ndvs)
-colnames(mv_Pillai) <- c('Pillai-Bartlett Trace', 'F-approx. ', 'df1', 'df2', 'p')
+colnames(mv_Pillai) <- c('Pillai-Bartlett Trace', 'F-approx.', 'df1', 'df2', 'p')
 rownames(mv_Pillai) <- paste(1:nrow(mv_Pillai), paste("through ", nrow(mv_Pillai), sep = ""))
 # print(round(mv_Pillai), print.gap=4); cat('\n\n')
 
 mv_Hotelling <- Hotelling(rho=rho, Ncases=Ncases, p = NCVs, q = Ndvs)
-colnames(mv_Hotelling) <- c('Hotelling-Lawley Trace', 'F-approx. ', 'df1', 'df2', 'p')
+colnames(mv_Hotelling) <- c('Hotelling-Lawley Trace', 'F-approx.', 'df1', 'df2', 'p')
 rownames(mv_Hotelling) <- paste(1:nrow(mv_Hotelling), paste("through ", nrow(mv_Hotelling), sep = ""))
 # print(round(mv_Hotelling), print.gap=4); cat('\n\n')
 
