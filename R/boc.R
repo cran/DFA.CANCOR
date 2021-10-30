@@ -79,7 +79,7 @@ betaboc <- function (b,iv,dv) {
 
 umvn <- function(data) {
 	
-	# descriptive statistics & tests of univarite & multivariate normality -- from the MVN package
+	# descriptive statistics & tests of univariate & multivariate normality -- from the MVN package
 		
 	# # uvn1 <- uniNorm(data, type = "SW", desc = TRUE)  # Shapiro-Wilk test of univariate normality
 	# # uvn2 <- uniNorm(data, type = "CVM", desc = FALSE)  # Cramer- von Mises test of univariate normality
@@ -107,7 +107,7 @@ umvn <- function(data) {
 	descriptives <- cbind(descriptives[,1:7], skewZ, skewP, descriptives$Kurtosis, kurtosisZ, kurtosisP)
 	colnames(descriptives)[8:12] <- c('Skew z','Skew p','Kurtosis','Kurtosis z','Kurtosis p')
 
-	Shapiro_Wilk <- res1$"univariateNormality"
+	Shapiro_Wilk   <- res1$"univariateNormality"
 	
 	Mardia         <- res1$"multivariateNormality"[1:2,]
 	Henze_Zirkler  <- res2$"multivariateNormality"
@@ -615,7 +615,15 @@ RoyRoot <- function(rho, Ncases, p, q) {
 	df2 = Ncases - m - d   # - 1
 	Froy = df2 / df1 * eval
 	pvalue <- pf(Froy, df1, df2, lower.tail = FALSE)
-	RoyRootOutput <- cbind(rho[1]**2,Froy,df1,df2,pvalue)
+
+	# 2017 Manly, Alberto - Multivariate Statistical Methods  p 68:
+	# It may be important to know that what some computer programs call Roys largest 
+	# root statistic is 1/(11) rather than 1 itself. 	
+	lambda <- rho[1]**2
+
+	# RoyRootOutput <- cbind(rho[1]**2,Froy,df1,df2,pvalue)
+	RoyRootOutput <- cbind(eval[1], lambda, Froy,df1,df2,pvalue) #, rho[1], rho[1]**2, eval[1])
+
 	return(invisible(RoyRootOutput))
 }
 

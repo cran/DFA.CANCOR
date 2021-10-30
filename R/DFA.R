@@ -125,7 +125,7 @@ rownames(mv_Hotelling) <- paste(1:nrow(mv_Hotelling), paste("through ", nrow(mv_
 # print(round(mv_Hotelling), print.gap=4); cat('\n\n')
 
 mv_Roy <- RoyRoot(rho=rho, Ncases=Ncases, p = NCVs, q = Ndvs)
-colnames(mv_Roy) <- c('Roy\'s Largest Root', 'F-approx.', 'df1', 'df2', 'p')
+colnames(mv_Roy) <- c('Roy\'s Largest Root', 'lambda ', 'F-approx. ', 'df1', 'df2', 'p')
 rownames(mv_Roy) <- paste(1:nrow(mv_Roy), paste("through ", nrow(mv_Roy), sep = ""))
 # print(round(mv_Roy), print.gap=4); cat('\n\n')
 
@@ -418,7 +418,9 @@ if (plot == TRUE) {
 if (verbose == TRUE) {
 	
 	cat('\n\n\nLinear Discriminant Function Analysis:\n')
-	
+
+	if (NAflag) cat('\n\nCases with missing values were found and removed from the data matrix.\n\n')
+			
 	# eigenvalues, canonical correlations, & one-way anovas on the DFs
 	cat('\n\n\nEigenvalues & canonical correlations:\n\n')
 	print(round_boc(evals), print.gap=4)
