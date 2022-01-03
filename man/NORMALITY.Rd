@@ -1,8 +1,8 @@
-\name{normality}
-\alias{normality}
+\name{NORMALITY}
+\alias{NORMALITY}
 \title{Univariate and multivariate normality}
 \description{Produces tests of univariate and multivariate normality using the MVN package.}
-\usage{normality(data, groups, variables, verbose)}
+\usage{NORMALITY(data, groups, variables, verbose)}
 \arguments{
   \item{data}{
   \code{}A dataframe where the rows are cases & the columns are the variables.}
@@ -32,20 +32,16 @@
   \item{Doornik_Hansen}{the Doornik_Hansen test of multivariate normality}
 }
 \references{
-	{Korkmaz, S., Goksuluk, D., Zararsiz, G. (2014). MVN: An R Package for Assessing 
-	 Multivariate Normality. \emph{The R Journal, 6(2),} 151-162.}
-	
-	{Szekely,G. J., & Rizzo, M. L. (2017). The Energy of Data. \emph{The Annual 
-	 Review of Statistics and Its Application 4,} 447-79.}
-	 
-	{Tabachnik, B. G., & Fidell, L. S. (2013). \emph{Using multivariate statistics 
-	 (6th. ed., pp. 79-83).} New York, NY: Pearson.}
-
+	{Korkmaz, S., Goksuluk, D., Zararsiz, G. (2014). MVN: An R package for assessing 
+	 multivariate normality. \emph{The R Journal, 6(2),} 151-162.}	
+\cr\cr {Szekely,G. J., & Rizzo, M. L. (2017). The energy of data. \emph{Annual 
+	 Review of Statistics and Its Application 4,} 447-79.}	 
+\cr\cr {Tabachnik, B. G., & Fidell, L. S. (2019). \emph{Using multivariate statistics (7th ed.).} New York, NY: Pearson.}
 }
 \author{Brian P. O'Connor }
 \examples{
 # data that simulate those from De Leo & Wulfert (2013)
-normality(data = na.omit(data_CCA_De_Leo[c(
+NORMALITY(data = na.omit(data_CCA_De_Leo[c(
           'Unprotected_Sex','Tobacco_Use','Alcohol_Use','Illicit_Drug_Use',
           'Gambling_Behavior','CIAS_Total','Impulsivity','Social_Interaction_Anxiety',
           'Depression','Social_Support','Intolerance_of_Deviance','Family_Morals',
@@ -53,19 +49,19 @@ normality(data = na.omit(data_CCA_De_Leo[c(
  
 \donttest{
 # data from Field et al. (2012)
-normality(data = data_DFA_Field, 
+NORMALITY(data = data_DFA_Field, 
           groups = 'Group', 
           variables = c('Actions','Thoughts'))
 
 # data from Tabachnik & Fidell (2013, p. 589)
-normality(data = na.omit(data_CCA_Tabachnik[c('TS','TC','BS','BC')]))
+NORMALITY(data = na.omit(data_CCA_Tabachnik[c('TS','TC','BS','BC')]))
 
 # UCLA dataset
 UCLA_CCA_data <- read.csv("https://stats.idre.ucla.edu/stat/data/mmreg.csv")
 colnames(UCLA_CCA_data) <- c("LocusControl", "SelfConcept", "Motivation",
                              "read", "write", "math", "science", "female")
 summary(UCLA_CCA_data)
-normality(data = na.omit(UCLA_CCA_data[c("LocusControl","SelfConcept","Motivation",
+NORMALITY(data = na.omit(UCLA_CCA_data[c("LocusControl","SelfConcept","Motivation",
                                          "read","write","math","science","female")]))
 }
 

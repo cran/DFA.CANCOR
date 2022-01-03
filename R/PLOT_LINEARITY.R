@@ -1,5 +1,5 @@
 
-plot_linearity <- function(data, idv, dv, groups=NULL, groupNAME=NULL, 
+PLOT_LINEARITY <- function(data, idv, dv, groups=NULL, groupNAME=NULL, 
                            legposition=NULL, leginset=NULL, verbose=TRUE) {
 
 # plots for assessing linearity between 2 continous variables
@@ -7,7 +7,7 @@ plot_linearity <- function(data, idv, dv, groups=NULL, groupNAME=NULL,
 # uses lowess for a loess plot
 
 
-plot_linearityOutput <- list()
+PLOT_LINEARITYOutput <- list()
 
 
 if (is.null(groupNAME) == TRUE)  dontemp <- data.frame(data[,idv],data[,dv])
@@ -20,10 +20,10 @@ if (is.null(groupNAME) == FALSE) {
 	
 if (anyNA(dontemp) == TRUE) {
 	dontemp <- na.omit(dontemp)
-	cat('\n\nCases with missing values were found and removed from the data matrix.\n\n')
+	message('\n\nCases with missing values were found and removed from the data matrix.\n')
 }
 					
-plot_linearityOutput <- list()
+PLOT_LINEARITYOutput <- list()
 coefs <- matrix(-9999,2,4)
 
 IV <- dontemp[,1]
@@ -45,13 +45,13 @@ beta <- betaboc(coefs[,1],IV,DV)
 coefs <- cbind(coefs[,1:2],beta,coefs[,3:4])
 
 lname <- paste(paste(idv),'_(X)_&_', paste(dv),'_(Y))',sep='')
-plot_linearityOutput[[lname]]$coefs <- coefs
+PLOT_LINEARITYOutput[[lname]]$coefs <- coefs
 		
 if (verbose == TRUE) {		
-	cat('\n\n\nTests for linear and quadratic effects:')
+	message('\n\nTests for linear and quadratic effects:')
 	coefs <- cbind(round(coefs[,1:4],2),round(coefs[,5],6))
 	colnames(coefs)[5] <- 'Pr(>|t|)'
-	cat('\n\n',paste(paste(idv),' (idv) & ', paste(dv),' (dv)',sep=''),'\n')
+	message('\n',paste(paste(idv),' (idv) & ', paste(dv),' (dv)',sep=''),'\n')
 	print(round(coefs,5))		
 }		
 
@@ -76,14 +76,14 @@ if (is.null(legposition) | is.null(leginset)) {
 }
 
 		
-plot_linearityOutput$plotdata$idv <- IV
-plot_linearityOutput$plotdata$idvsqd <- IVsqd
-plot_linearityOutput$plotdata$dv  <- DV
-plot_linearityOutput$plotdata$IVforpred <- IVforpred
-plot_linearityOutput$plotdata$DVpredicted <- DVpredicted
-plot_linearityOutput$plotdata$loessX <- loessdat$x
-plot_linearityOutput$plotdata$loessY <- loessdat$y
+PLOT_LINEARITYOutput$plotdata$idv <- IV
+PLOT_LINEARITYOutput$plotdata$idvsqd <- IVsqd
+PLOT_LINEARITYOutput$plotdata$dv  <- DV
+PLOT_LINEARITYOutput$plotdata$IVforpred <- IVforpred
+PLOT_LINEARITYOutput$plotdata$DVpredicted <- DVpredicted
+PLOT_LINEARITYOutput$plotdata$loessX <- loessdat$x
+PLOT_LINEARITYOutput$plotdata$loessY <- loessdat$y
 
-return(invisible(plot_linearityOutput))
+return(invisible(PLOT_LINEARITYOutput))
 
 }

@@ -1,7 +1,356 @@
 
+	
+
+# DFAposteriors = data.frame(DFA_Field$posteriors)
+
+
+
+
+DFC_post_class_stats <- function (DFAposteriors, grpnames, verbose=FALSE) {
+
+	Group <- NULL # to avoid a "no visible binding for global variable 'Group'" warning
+
+	postvarnoms <- names(DFAposteriors[,-grep("Group",colnames(DFAposteriors))])	
+	Ngroups <- ncol(DFAposteriors) - 1	
+
+	# Group Sizes
+	groupNs <- aggregate(x = DFAposteriors[,postvarnoms[1]], by = list(DFAposteriors$Group), FUN=length)[,2]
+	names(groupNs) <- grpnames
+
+	# # Group mean classification probabilities -- aggregate produces a list that is too long/tiresome to work with
+	# grpMNprobs <- aggregate(x = DFAposteriors[,postvarnoms], by = list(DFAposteriors$Group), FUN=mean)
+	# grpMNprobs <- grpMNprobs[,-1]
+	# grpMNprobs <- diag(as.matrix(t(sapply(grpMNprobs,c))))		
+	# names(grpMNprobs) <- grpnames
+	# message("\n\nGroup mean classification probabilities:\n")
+	# print(round_boc(grpMNprobs,2), print.gap=4)
+
+	grpMNprobs <- matrix(NA,1,Ngroups)
+	classifprobs <- cbind(0, .1, .2, .3, .4, .5, .6, .7, .75, .80, .85, .90, .95, 1)
+	grp_prob_Ns <- grp_prob_proports <- matrix(NA,ncol(classifprobs),Ngroups)
+
+	for (lupec in 1:Ngroups) {	
+		dumm <- subset(DFAposteriors, Group == grpnames[lupec], select=postvarnoms)
+
+		# grpMNprobs[1,lupec] <- mean(dumm[,lupec])
+		postcolnum <- which( substring(names(DFAposteriors), 11) == grpnames[lupec])
+		grpMNprobs[1,lupec] <- mean(dumm[,postcolnum])
+	
+		for (luper in 1:nrow(grp_prob_Ns) ) 			
+			grp_prob_Ns[luper,lupec] <- length(dumm[,lupec][dumm[,lupec] > classifprobs[1,luper]]) 
+			# grp_prob_proports[luper,lupec] <- grp_prob_Ns[luper,lupec] / groupNs[lupec] 
+	}	
+	grpMNprobs <- matrix(grpMNprobs, 1, length(grpMNprobs))
+	dimnames(grpMNprobs) <- list(rep("", dim(grpMNprobs)[1])); colnames(grpMNprobs) <- grpnames
+
+	grp_prob_proports <- grp_prob_Ns / groupNs	
+
+	# # message("\n\nAverage of the highest classification probabilities: ", 
+	# message("\n\nAverage of the (original) group classification probabilities: ", 
+	    # round(mean(apply( DFAposteriors[,-grep("Group",colnames(DFAposteriors))], 1, max)),2)  )
+		
+	# # the uncertainties of the classifications
+	# uncertanties <- 1 - (apply(DFAposteriors[,-grep("Group",colnames(DFAposteriors))], 1, max))
+	# message("\n\nAverage of the classification uncertainties: ", round(mean(uncertanties),2))
+	
+	grp_prob_Ns <- cbind( t(classifprobs), grp_prob_Ns)
+	dimnames(grp_prob_Ns) <-list(rep("", dim(grp_prob_Ns)[1]))
+	colnames(grp_prob_Ns) <- c("Classif. prob.", grpnames )
+	
+	# grp_prob_proports <- matrix(-99,ncol(classifprobs),Ngroups)
+	# for (lupe in 1: )  grp_prob_proports[,lupe] <- grp_prob_Ns[,lupe] / groupNs[lupe]  
+	grp_prob_proports <- cbind( t(classifprobs), grp_prob_proports)
+	dimnames(grp_prob_proports) <-list(rep("", dim(grp_prob_proports)[1]))
+	colnames(grp_prob_proports) <- c("Classif. prob.", grpnames )
+	
+	if (verbose) {
+		message("\nGroup Sizes: \n"); print(groupNs)
+			
+		message("\n\nGroup mean posterior classification probabilities: \n"); 
+		print(round(grpMNprobs,2), print.gap=4)
+			
+		message("\n\nNumber of cases per level of posterior classification probability:\n") 
+		print(grp_prob_Ns, print.gap=4)
+			
+		message("\n\nProportions of cases per level of posterior classification probability:\n") 
+		print(grp_prob_proports, print.gap=4); message("\n")		
+	}	
+
+	output <- list(groupNs=groupNs, grpMNprobs=grpMNprobs, grp_prob_Ns=grp_prob_Ns, grp_prob_proports=grp_prob_proports) 
+
+	return(invisible(output))
+} 
+
+
+
+# DFC_post_class_stats(DFAposteriors, grpnames=grpnames, verbose=TRUE) 
+
+
+
+
+
+
+
+
+DFA_classes <- function(donnes, grpmeans, Ngroups, groupNs, grpnames, Ncases, W, priorprob='SIZES', covmat_type=covmat_type) {
+
+	Ndvs <- ncol(donnes) - 1
+
+	# the group prior probabilities
+	if (priorprob == 'EQUAL')  prior <- matrix( (1 / Ngroups), 1, Ngroups)
+	if (priorprob == 'SIZES')  prior <- matrix( (groupNs / Ncases), 1, Ngroups)
+	dimnames(prior) <- list(rep("", dim(prior)[1])); colnames(prior) <- grpnames
+		
+
+	if (covmat_type == 'within')  {   # classification -- T & F 2013, p 389 - 391
+
+		# the weights
+		Cj <- t(apply(grpmeans, 1, function(grpmeans, W) { solve(W) %*% grpmeans }, W=W))
+		colnames(Cj) <- colnames(donnes[,2:(Ndvs+1)])
+	
+		# the constants
+		# T & F 2013 p 389 = -.5 * t(Cj[x,]) %*% grpmeans[x,];   but SPSS = log(prior[x]) -.5 * t(Cj[x,]) %*% grpmeans[x,]
+		Cj0 <- sapply(1:Ngroups, function(x, grpmeans, Cj) { log(prior[x]) -.5 * t(Cj[x,]) %*% grpmeans[x,] }, grpmeans=grpmeans, Cj=Cj)
+		names(Cj0) <- grpnames
+		
+		clsfxnvals <- matrix(NA, Ncases, Ngroups)
+		if (priorprob == 'EQUAL') {
+			for (ng in 1:Ngroups) {
+				clsfxnvals[,ng] <- sapply(1:Ncases, 
+				                          function(x, Cj0, Cj, ng) 
+				                                   { Cj0[ng] + sum(Cj[ng,] * donnes[x,(2:(Ndvs+1))]) }, 
+				                                   Cj0=Cj0, Cj=Cj, ng=ng)
+			}
+		}
+		if (priorprob == 'SIZES') {   #  log(groupNs[ng] / Ncases) is from T & F 2013 p 391
+			for (ng in 1:Ngroups) {
+				clsfxnvals[,ng] <- sapply(1:Ncases, 
+				                          function(x, Cj0, Cj, ng, groupNs) 
+				                          		   { Cj0[ng] + sum(Cj[ng,] * donnes[x,(2:(Ndvs+1))]) + log(prior[ng]) }, 
+				                          		   Cj0=Cj0, Cj=Cj, ng=ng, groupNs=groupNs)
+			}
+		}
+		
+	dfa_class <- apply(clsfxnvals, 1, which.max)
+
+	
+	# posterior probabilities -- adapted from 
+	# 2019 Boedeker - LDA for Prediction of Group Membership - A User-Friendly Primer - Appendix A
+	# the code below produces the same posteriors values as MASS::lda
+	detW <- det(W)   # determinant of the pooled variance-covariance matrix
+	invW <- solve(W)		
+	fs_formula_pt1 <- (1/(((2*pi)^(Ndvs/2))*(detW^.5)))
+	posteriors <- c()
+	for (luper in 1:Ncases) {
+		fs <- c()
+		for (lupeg in 1:Ngroups) {
+			fs   <- append(fs, fs_formula_pt1 * 
+			                   exp(-.5*(t(t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) 
+			                   %*% invW %*% (t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) )	
+		}
+		posteriors <- rbind(posteriors, ((fs * prior) / sum(fs * prior)) )
+	}
+	colnames(posteriors) <- paste("posterior_", grpnames, sep="")
+	posteriors <- as.data.frame(posteriors)
+	posteriors$Group <- donnes[,1]
+	rownames(posteriors) <- 1:Ncases
+
+	DFAclass_output <- list(dfa_class=dfa_class, prior=prior, classifcoefs=t(Cj), classifints=Cj0, posteriors=posteriors) 
+	}
+
+
+	if (covmat_type == 'separate') {
+
+		# use of separate-groups covariance matrices for classification is called Quadratic Discriminant Analysis
+		# SPSS has a separate-groups covariance matrices option, but it uses group cov matrices based on the DFs - not great
+		# the MASS package has a qda function (which my code replicates) -- prob = no clear way to get/display the classif function coeffs
+		
+		# Cj <- matrix(-9999, Ngroups, Ndvs)
+		# for (lupeg in 1:Ngroups) {
+			# dum <- subset(donnes, donnes[,1] == grpnames[lupeg] )		
+			# Wgrp <- stats::cov(dum[,2:ncol(dum)]); print(Wgrp)			
+			# Cj[lupeg,] <- solve(Wgrp) %*% grpmeans[lupeg,]						
+		# }
+
+		# Quadratic Discriminant Analysis of Several Groups 
+		# Rencher (2002, p. 306), but R code adpated from Schlegel  https://rpubs.com/aaronsc32/qda-several-groups		
+		# split the data into groups & get the groups covariance matrices and group mean vectors
+		donnes.groups <- split(donnes[,2:ncol(donnes)], donnes[,1])
+		Si <- lapply(donnes.groups, function(x) cov(x))		
+		donnes.grpmeans <- lapply(donnes.groups, function(x) { c(apply(x, 2, mean)) })		
+		dfa_class <- c() 
+		for (luper in 1:Ncases) {			  
+			y <- donnes[luper,2:ncol(donnes)] 			  
+			l2i <- c()		  
+			for (j in 1:Ngroups) { # For each group, calculate the QDA function 
+				y.bar <- unlist(donnes.grpmeans[j])
+				Si.j <- matrix(unlist(Si[j]), Ndvs, byrow = TRUE)
+				l2i <- append(l2i, -.5 * log(det(Si.j)) - .5 * as.numeric(y - y.bar) %*% solve(Si.j) %*% as.numeric(y - y.bar) + log(prior[j]))
+			}			  
+			dfa_class <- append(dfa_class, which.max(l2i))   # the group number which maximizes the function
+		}
+
+
+	# posterior probabilities -- adapted from 
+	# 2019 Boedeker - LDA for Prediction of Group Membership - A User-Friendly Primer - Appendix A
+	# the code below produces the same posteriors values as MASS::qda
+	detWgrp <- c()
+	invWgrp <- replicate(Ngroups, matrix(NA, Ndvs, Ndvs), simplify = F)
+	for (lupeg in 1:Ngroups) {
+		dum <- subset(donnes, donnes[,1] == grpnames[lupeg] )		
+		Wgrp <- stats::cov(dum[,2:ncol(dum)])
+		invWgrp[[lupeg]] <- solve(Wgrp)
+		detWgrp <- append(detWgrp, det(Wgrp))   
+	}			
+	posteriors <- c()
+	for (luper in 1:Ncases) {
+		fs <- c()
+		for (lupeg in 1:Ngroups) {
+			fs   <- append(fs, (1/(((2*pi)^(Ndvs/2))*(detWgrp[lupeg]^.5))) * 
+			                   exp(-.5*(t(t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) 
+			                   %*% invWgrp[[lupeg]] %*% (t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) )	
+		}
+		# posteriors <- rbind(posteriors,  ((fs * prior) / sum(fs * prior)) )
+		posteriors <- rbind(posteriors,  ((fs * prior) / sum(fs * prior)) )
+	}
+	colnames(posteriors) <- paste("posterior_", grpnames, sep="")
+	posteriors <- as.data.frame(posteriors)
+	posteriors$Group <- donnes[,1]
+	rownames(posteriors) <- 1:Ncases
+				
+	DFAclass_output <- list(dfa_class=dfa_class, prior=prior, classifcoefs=NA, classifints=NA, posteriors=posteriors) 
+	}
+
+	return(invisible(DFAclass_output))
+}
+
+
+
+
+ 
+
+
+
+
+
+
+
+DFA_classes_CV <- function(donnes, priorprob='SIZES', covmat_type) {
+
+	# Cross-Validation of Predicted Groups
+	# In cases with small sample sizes, prediction error rates can tend to 
+	# be optimistic. Cross-validation is a technique used to estimate how accurate a predictive 
+	# model may be in actual practice. When larger sample sizes are available, the more common 
+	# approach of splitting the data into test and training sets may still be employed. There 
+	# are many different approaches to cross-validation, including leave-p-out and k-fold 
+	# cross-validation. One particular case of leave-p-out cross-validation is the leave-one-out 
+	# approach, also known as the holdout method.
+	
+	# Leave-one-out cross-validation is performed by using all but one of the sample 
+	# observation vectors to determine the classification function and then using that 
+	# classification function to predict the omitted observations group membership. 
+	# The procedure is repeated for each observation so that each is classified by a 
+	# function of the other observations.
+
+	Ncasesm1 <- nrow(donnes) - 1
+	Ndvs <- ncol(donnes) - 1
+	Ngroups  <- length(unique(donnes[,1]))
+
+		
+	if (covmat_type == 'within')  {   # classification -- T & F 2013, p 389 - 391
+
+		dfa_class_CV <- c()
+		for (luper in 1:nrow(donnes)) {
+			
+			donnesm1 <- donnes[-luper,]
+	
+			MV2 <- manova( as.matrix(donnesm1[,2:ncol(donnesm1)]) ~ donnesm1[,1], data=donnesm1)
+			sscpwith <- (Ncasesm1 - 1) * cov(MV2$residuals) # E	
+			W <- sscpwith * (1 / (Ncasesm1 - Ngroups))   # vcv 
+			
+			# classification -- T & F 2013, p 389 - 391
+	
+			grpmeans <- sapply(2:ncol(donnesm1), function(x) tapply(donnesm1[,x], INDEX = donnesm1[,1], FUN = mean))
+	
+			groupNs <- as.matrix(table(donnesm1[,1]))
+						
+			# the weights
+			Cj <- t(apply(grpmeans, 1, function(grpmeans, W) { solve(W) %*% grpmeans }, W=W))
+		
+			# the constants
+			Cj0 <- sapply(1:Ngroups, function(x, grpmeans, Cj) { -.5 * t(Cj[x,]) %*% grpmeans[x,] }, grpmeans=grpmeans, Cj=Cj)
+		
+			clsfxnvals <- matrix(NA, 1, Ngroups)
+			if (priorprob == 'EQUAL') {
+				for (ng in 1:Ngroups) clsfxnvals[,ng] <- Cj0[ng] + sum(Cj[ng,] * donnes[luper,(2:(Ndvs+1))])
+			}
+			if (priorprob == 'SIZES') {  
+				for (ng in 1:Ngroups) 
+					 clsfxnvals[,ng] <- Cj0[ng] + sum(Cj[ng,] * donnes[luper,(2:(Ndvs+1))]) + log(groupNs[ng] / Ncasesm1) 
+			}
+			
+			dfa_class_CV <- append(dfa_class_CV, apply(clsfxnvals, 1, which.max) )
+		}
+	}
+
+
+	if (covmat_type == 'separate') {
+
+		dfa_class_CV <- c()
+		for (luper in 1:nrow(donnes)) {
+			
+			donnesm1 <- donnes[-luper,]
+	
+			# use of separate-groups covariance matrices for classification is called Quadratic Discriminant Analysis
+			# SPSS has a separate-groups covariance matrices option, but it uses group cov matrices based on the DFs - not great
+			# the MASS package has a qda function (which my code replicates) -- prob = no clear way to get/display the classif function coeffs
+			
+			# Cj <- matrix(-9999, Ngroups, Ndvs)
+			# for (lupeg in 1:Ngroups) {
+				# dum <- subset(donnes, donnes[,1] == grpnames[lupeg] )		
+				# Wgrp <- stats::cov(dum[,2:ncol(dum)]); print(Wgrp)			
+				# Cj[lupeg,] <- solve(Wgrp) %*% grpmeans[lupeg,]						
+			# }
+	
+			# Quadratic Discriminant Analysis of Several Groups 
+			# Rencher (2002, p. 306), but R code adpated from Schlegel  https://rpubs.com/aaronsc32/qda-several-groups
+			
+			# split the data into groups & get the groups covariance matrices and group mean vectors
+			donnesm1.groups <- split(donnesm1[,2:ncol(donnesm1)], donnesm1[,1])
+			Si <- lapply(donnesm1.groups, function(x) cov(x))		
+			donnesm1.grpmeans <- lapply(donnesm1.groups, function(x) { c(apply(x, 2, mean)) })
+			groupNs <- as.matrix(table(donnesm1[,1]))
+			
+			# the group prior probabilities
+			if (priorprob == 'EQUAL')  prior <- matrix( (1 / Ngroups), 1, Ngroups)
+			if (priorprob == 'SIZES')  prior <- matrix( (groupNs / Ncasesm1), 1, Ngroups)
+			# dimnames(prior) <- list(rep("", dim(prior)[1])); colnames(prior) <- grpnames
+		
+				y <- donnes[luper,2:ncol(donnesm1)] 
+				  
+				l2i <- c()		  
+				for (j in 1:Ngroups) { # For each group, calculate the QDA function 
+					y.bar <- unlist(donnesm1.grpmeans[j])
+					Si.j <- matrix(unlist(Si[j]), Ndvs, byrow = TRUE)
+					# l2i <- append(l2i, -.5 * log(det(Si.j)) - .5 * as.numeric(y - y.bar) %*% solve(Si.j) %*% as.numeric(y - y.bar) + log(1/length(Si)))
+					l2i <- append(l2i, -.5 * log(det(Si.j)) - .5 * as.numeric(y - y.bar) %*% solve(Si.j) %*% as.numeric(y - y.bar) + log(prior[j]))
+				}
+				  
+				dfa_class_CV <- append(dfa_class_CV, which.max(l2i))   # the group number which maximizes the function
+		}
+	}
+	
+return(invisible(dfa_class_CV))
+}		
+		
+
+
+
+
+
 
 # rounds numeric columns in a matrix
-# numeric columns named 'p' or 'plevel' are rounded to round_p places
+# numeric columns named 'p' or 'plevel' or 'plevel.adj' are rounded to round_p places
 # numeric columns not named 'p' are rounded to round_non_p places
 
 round_boc <- function(donnes, round_non_p = 3, round_p = 5) {
@@ -12,7 +361,8 @@ round_boc <- function(donnes, round_non_p = 3, round_p = 5) {
 
 		if (is.numeric(donnes[,lupec]) == TRUE) 
 		
-			if (colnames(donnes)[lupec] == 'p' | colnames(donnes)[lupec] == 'plevel')  {
+			if (colnames(donnes)[lupec] == 'p' | colnames(donnes)[lupec] == 'plevel'  | 
+			    colnames(donnes)[lupec] == 'p adj.')  {
 				donnes[,lupec] <- round(donnes[,lupec],round_p)
 			} else {
 				donnes[,lupec] <- round(donnes[,lupec],round_non_p)				
@@ -133,11 +483,14 @@ return(invisible(umvnoutput))
 
 
 
-squareTable <- function(var1, var2, grpnames) {
-    Original  <- factor(var1, levels = grpnames)
-    Predicted <- factor(var2, levels = grpnames)
-    table(Original, Predicted)
+squareTable <- function(var1, var2, grpnames, tabdimnames=c('variable 1','variable 2')) {
+    var1fact <- factor(var1, labels = grpnames)
+    var2fact <- factor(var2, labels = grpnames)
+    table(var1fact, var2fact, dnn=tabdimnames)
 }
+
+
+
 
 
 
@@ -336,98 +689,6 @@ PressQ <- function(freqs) {
 }
 
 
-
-
-
-
-############################# T tests  ############################################################
-
-
-"ttestboc" <-  function (donnesT, var.equal=FALSE) {
-	
-# reads raw data; the groups variable is in 1st column; the DV(s) are in the subsequent columns
-# the groups variable can be categorical
-# the function compares the lowest & highest values of the group variable
-
-# var.equal -- a logical variable indicating whether to treat the two variances as being equal. 
-# If TRUE then the pooled variance is used to estimate the variance otherwise the  
-# Welch (or Satterthwaite) approximation to the degrees of freedom is used.
-
-# p.adjust.methods options are "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
-
-#cat("\n\nGroups t-test:\n")
-
-
-grpnames <- as.vector(as.matrix(donnesT[,1])) # group names, in the same order as in the data matrix
-grpnames <- unique(grpnames)
-#grpnums <- seq(1:length(grpnames))
-
-donnesT[,1] <- as.numeric(donnesT[,1])
-
-resultsM <- matrix(-9999,1,13)
-#ngroups <- max(donnesT[,1])
-ngroups <- length(grpnames)
-grpnoms <- cbind(-9999,-9999)
-
-for (lupe1 in 1:(ngroups-1)) {
-	for (lupe2 in (lupe1+1):ngroups) {
-
-		dum <- subset(donnesT, donnesT[,1] == lupe1 | donnesT[,1] == lupe2  )
-		
-		newdon = data.frame(dum[,1], dum[,2])
-
-		groupmin <- min(newdon[,1])
-		groupmax <- max(newdon[,1])
-
-		mgrp1 <- mean(subset(newdon[,2],newdon[,1]==groupmin))
-		mgrp2 <- mean(subset(newdon[,2],newdon[,1]==groupmax))
-
-		sdgrp1 <- stats::sd(subset(newdon[,2],newdon[,1]==groupmin))
-		sdgrp2 <- stats::sd(subset(newdon[,2],newdon[,1]==groupmax))
-
-		N1 <- nrow(subset(newdon,newdon[,1]==groupmin))
-		N2 <- nrow(subset(newdon,newdon[,1]==groupmax))
-
-		SE1 <- sdgrp1 / sqrt(N1)
-		SE2 <- sdgrp2 / sqrt(N2)
-
-		tresults <- stats::t.test(newdon[,2]~newdon[,1],data=newdon, var.equal=var.equal) 
-		tgroups  <- tresults$statistic
-		dfgroups <- tresults$parameter
-		plevel   <- tresults$p.value
-
-		# r effect size
-		reffsiz =  sqrt( tgroups**2 / (tgroups**2 + dfgroups)  )
-
-		# d effect size -- from R&R p 303 General Formula  best, because covers = & not = Ns
-		deffsiz = (tgroups * (N1+N2)) / ( sqrt(dfgroups) * sqrt(N1*N2) )
-
-		results <- cbind( groupmin, N1, mgrp1, sdgrp1, groupmax, N2, mgrp2, sdgrp2,
-		                  tgroups, dfgroups, plevel, reffsiz, abs(deffsiz) )
-
-		results <- as.matrix(cbind(results))
-		resultsM <- rbind( resultsM, results)
-		
-		grpnoms <- rbind( grpnoms, cbind(grpnames[lupe1], grpnames[lupe2]))
-	}  	
-}
-
-grpnoms <- grpnoms[-c(1),]
-
-resultsM2 <- data.frame(resultsM[-1,,drop=FALSE])
-
-# resultsM2[,1] <- grpnoms[,1]   # pre April 2021
-# resultsM2[,5] <- grpnoms[,2]   # pre April 2021
-
-resultsM2[,1] <- grpnoms[1]
-resultsM2[,5] <- grpnoms[2]
-
-rownames(resultsM2) <- c()
-colnames(resultsM2) <- c("Group","N","Mean","SD","Group","N","Mean","SD",
-                         "t","df","p","r effsize","d effsize")
-
-return(invisible(as.data.frame(resultsM2)))
-}
 
 
 
@@ -659,7 +920,6 @@ BartlettV <- function(rho, Ncases, p, q) {
 		pvalue[lupe] <- pchisq(X2[lupe], df[lupe], ncp=0, lower.tail = FALSE) 
 	}
 		
-#	print(cbind(wilks,X2,df,pvalue))
 	BartlettVOutput <- cbind(round(wilks,2),round(X2,2),df,pvalue)
 	return(invisible(BartlettVOutput))
 }
@@ -694,7 +954,6 @@ Rao <- function(rho, Ncases, p, q) {
 		Frao[lupe] <- ((1 - wilks[lupe]^(1/s)) / wilks[lupe]^(1/s)) * df2[lupe] / df1[lupe] 
 		pvalue[lupe] <- suppressWarnings(pf(Frao[lupe], df1[lupe], df2[lupe], ncp=0, lower.tail = FALSE))
     }
-#	print(cbind(wilks,Frao,df1,df2,pvalue))
 	RaoOutput <- cbind(round(wilks,2),round(Frao,2),df1,round(df2,2),round(pvalue,5))
 	return(invisible(RaoOutput))
 }

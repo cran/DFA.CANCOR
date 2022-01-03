@@ -1,12 +1,12 @@
 
 
-homogeneity <- function(data, groups, variables, verbose = TRUE) {
+HOMOGENEITY <- function(data, groups, variables, verbose = TRUE) {
 
 donnes <- as.data.frame(data[,c(groups,variables)])
 
 if (anyNA(donnes) == TRUE) {
 	donnes <- na.omit(donnes)
-	cat('\n\nCases with missing values were found and removed from the data matrix.\n\n')
+	message('\n\nCases with missing values were found and removed from the data matrix.\n')
 }
 
 grpnames <- as.vector(as.matrix(donnes[,1])) # group names, in the same order as in the data matrix
@@ -21,16 +21,16 @@ grpFreqs <- as.matrix(table(donnes[,c(1)]))
 
 logdetgrps <- 0 # Box's M test
 BoxLogdets <- matrix(-9999,ngroups,1) # for Box's M test
-homogeneityOutput <- list()
+HOMOGENEITYOutput <- list()
 for (lupeg in 1:ngroups) {
 	dum <- subset(donnes, donnes[,1] == grpnames[lupeg] )
 
 	covmatgrp <- stats::cov(dum[,2:ncol(dum)])
 	grpnom <- paste(grpnames[lupeg])		
-	homogeneityOutput[[grpnom]]$covmatrix  <- covmatgrp
+	HOMOGENEITYOutput[[grpnom]]$covmatrix  <- covmatgrp
 
 	if (verbose == TRUE) {
-		cat('\nCovariance matrix for Group', paste(grpnames[lupeg]),'\n\n')
+		message('\nCovariance matrix for Group', paste(grpnames[lupeg]),'\n')
 		print(round(covmatgrp,2))
 	}
 
@@ -38,11 +38,11 @@ for (lupeg in 1:ngroups) {
 	BoxLogdets[lupeg,1] <- log(det(covmatgrp)) # for Box's M test
 }
 
-# Bartlett's test of homogeneity of variances (parametric, for K samples)
+# Bartlett's test of HOMOGENEITY of variances (parametric, for K samples)
 Bartlett <- stats::bartlett.test(x=(donnes[,c(2:ncol(donnes))]), g=donnes[,1], data=donnes)
 Bartlett <- c(Bartlett$statistic, Bartlett$parameter, Bartlett$p.value)
 
-# Fligner-Killeen test of homogeneity of variances (non parametric, for K samples)
+# Fligner-Killeen test of HOMOGENEITY of variances (non parametric, for K samples)
 Fligner_Killeen <- c(stats::fligner.test(donnes[,c(2:ncol(donnes))], donnes[,1], data=donnes))
 Fligner_Killeen <- c(Fligner_Killeen$statistic, Fligner_Killeen$parameter, Fligner_Killeen$p.value)
 names(Fligner_Killeen)[1] <- 'Fligner_Killeen chi-squared'
@@ -114,39 +114,39 @@ BoxMtest <- c(BoxM, bigF, df1, df2, pbigF)
 
 if (verbose == TRUE) {
 
-#	cat('\n\nTests for homogeneity of variances & covariances:\n')	
+#	message('\n\nTests for HOMOGENEITY of variances & covariances:\n')	
 	
-	cat('\n\nBartlett test of homogeneity of variances (parametric):\n')
-	cat('\nBartlett\'s K-squared =', round(Bartlett[1],3), '  df =', Bartlett[2],
+	message('\n\nBartlett test of HOMOGENEITY of variances (parametric):')
+	message('\nBartlett\'s K-squared =', round(Bartlett[1],3), '  df =', Bartlett[2],
 	    '  p value =', round(Bartlett[3],5) )
 	
-	cat('\n\n\nFligner-Killeen test of homogeneity of variances (non parametric):\n')
-	cat('\nFligner-Killeen chi-squared =', round(Fligner_Killeen[1],3), 
+	message('\n\nFligner-Killeen test of HOMOGENEITY of variances (non parametric):')
+	message('\nFligner-Killeen chi-squared =', round(Fligner_Killeen[1],3), 
 	    '  df =', Fligner_Killeen[2], '  p value =', round(Fligner_Killeen[3],5) )
 	
-	cat('\n\n\nPooled within groups covariance matrix from SPSS:\n')
+	message('\n\nPooled within groups covariance matrix from SPSS:\n')
 	print(round(PooledWithinCovarSPSS,3))
 	
-	cat('\n\nPooled within groups correlation matrix from SPSS:\n')
+	message('\n\nPooled within groups correlation matrix from SPSS:\n')
 	print(round(PooledWithinCorrelSPSS,3))
 	
-	cat('\n\nBox Test of equality of covariance matrices:\n')
-	cat('\nLog determinants:\n')
+	message('\n\nBox Test of equality of covariance matrices:')
+	message('\nLog determinants:\n')
 	print(round(BoxLogdets,3))
-	cat('\n\nM =', round(BoxMtest[1],3), '  F =', round(BoxMtest[2],3), '  df1 =', round(BoxMtest[3],2), 
-	    '  df2 =', round(BoxMtest[4],2), '  p = ', round(BoxMtest[5],5), '\n\n\n')
+	message('\n\nM = ', round(BoxMtest[1],3), '  F = ', round(BoxMtest[2],3), '  df1 = ', round(BoxMtest[3],2), 
+	    '  df2 = ', round(BoxMtest[4],2), '  p = ', round(BoxMtest[5],5), '\n\n')
 }	
 
-homogeneityOutput$Bartlett = Bartlett
-homogeneityOutput$Fligner_Killeen = Fligner_Killeen
-homogeneityOutput$PooledWithinCovarSPSS = PooledWithinCovarSPSS
-homogeneityOutput$PooledWithinCorrelSPSS = PooledWithinCorrelSPSS
-homogeneityOutput$sscpWithin = sscpWithin
-homogeneityOutput$sscpBetween = sscpBetween
-homogeneityOutput$BoxLogdets = BoxLogdets
-homogeneityOutput$BoxMtest = BoxMtest	
+HOMOGENEITYOutput$Bartlett = Bartlett
+HOMOGENEITYOutput$Fligner_Killeen = Fligner_Killeen
+HOMOGENEITYOutput$PooledWithinCovarSPSS = PooledWithinCovarSPSS
+HOMOGENEITYOutput$PooledWithinCorrelSPSS = PooledWithinCorrelSPSS
+HOMOGENEITYOutput$sscpWithin = sscpWithin
+HOMOGENEITYOutput$sscpBetween = sscpBetween
+HOMOGENEITYOutput$BoxLogdets = BoxLogdets
+HOMOGENEITYOutput$BoxMtest = BoxMtest	
 
-return(invisible(homogeneityOutput))
+return(invisible(HOMOGENEITYOutput))
 
 }
 

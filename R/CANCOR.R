@@ -6,7 +6,7 @@ data <- as.data.frame(data[,c(set1,set2)])
  
 if (anyNA(data) == TRUE) {
 	data <- na.omit(data)
-#	cat('\n\nCases with missing values were found and removed from the data matrix.\n\n')
+#	message('\n\nCases with missing values were found and removed from the data matrix.\n')
 	NAflag = TRUE
 } else {
 	NAflag = FALSE
@@ -32,80 +32,80 @@ cancorrels <- output$cancorrels
 mv_Wilk <- Wilk(rho= cancorrels[,2], Ncases=Ncases, p = NVset1, q = NVset2)
 colnames(mv_Wilk) <- c('Wilk\'s Lambda', 'F-approx. ', 'df1', 'df2', 'p')
 rownames(mv_Wilk) <- paste(1:nrow(mv_Wilk), paste("through ", nrow(mv_Wilk), sep = ""))
-# print(round(mv_Wilk,4)); cat('\n\n')
+# print(round(mv_Wilk,4)); message('\n')
 
 mv_Pillai <- Pillai(rho= cancorrels[,2], Ncases=Ncases, p = NVset1, q = NVset2)
 colnames(mv_Pillai) <- c('Pillai-Bartlett Trace', 'F-approx. ', 'df1', 'df2', 'p')
 rownames(mv_Pillai) <- paste(1:nrow(mv_Pillai), paste("through ", nrow(mv_Pillai), sep = ""))
-# print(round(mv_Pillai,4)); cat('\n\n')
+# print(round(mv_Pillai,4)); message('\n')
 
 mv_Hotelling <- Hotelling(rho= cancorrels[,2], Ncases=Ncases, p = NVset1, q = NVset2)
 colnames(mv_Hotelling) <- c('Hotelling-Lawley Trace', 'F-approx. ', 'df1', 'df2', 'p')
 rownames(mv_Hotelling) <- paste(1:nrow(mv_Hotelling), paste("through ", nrow(mv_Hotelling), sep = ""))
-# print(round(mv_Hotelling,4)); cat('\n\n')
+# print(round(mv_Hotelling,4)); message('\n')
 
 mv_Roy <- RoyRoot(rho = cancorrels[,2], Ncases=Ncases, p = NVset1, q = NVset2)
 colnames(mv_Roy) <- c('Roy\'s Largest Root', 'lambda ', 'F-approx. ', 'df1', 'df2', 'p')
 rownames(mv_Roy) <- paste(1:nrow(mv_Roy), paste("through ", nrow(mv_Roy), sep = ""))
-# print(round(mv_Roy,4)); cat('\n\n')
+# print(round(mv_Roy,4)); message('\n')
 
 mv_BartlettV <- BartlettV(rho= cancorrels[,2], Ncases=Ncases, p = NVset1, q = NVset2)
-# cat('\n\n\nBartlett\'s V test:\n')
+# message('\n\nBartlett\'s V test:\n')
 colnames(mv_BartlettV) <- c('Wilk\'s Lambda', 'F-approx. ', 'df', 'p')
 rownames(mv_BartlettV) <- paste(1:nrow(mv_BartlettV), paste("through ", nrow(mv_BartlettV), sep = ""))
-# print(round(mv_BartlettV,4)); cat('\n\n')
+# print(round(mv_BartlettV,4)); message('\n')
 
 mv_Rao <- Rao(rho= cancorrels[,2], Ncases=Ncases, p = NVset1, q = NVset2)
-# cat('\n\n\nRao\'s V test:\n')
+# message('\n\nRao\'s V test:\n')
 colnames(mv_Rao) <- c('Wilk\'s Lambda', 'F-approx. ', 'df1', 'df2', 'p')
 rownames(mv_Rao) <- paste(1:nrow(mv_Rao), paste("through ", nrow(mv_Rao), sep = ""))
-# print(round(mv_Rao,4)); cat('\n\n')
+# print(round(mv_Rao,4)); message('\n')
 
 
 
 # bivariate correlations for the canonical variates
-# cat('\n\n\nCanonical correlations:\n\n')
+# message('\n\nCanonical correlations:\n')
 colnames(output$cancorrels) <- c('Eigenvalue', 'Canonical r', 'Canonical r sq.','t','df','p value')
 rownames(output$cancorrels) <- paste(" Canonical function ", 1:nrow(output$cancorrels),sep = "")
 # print(round(output$cancorrels,3))
-# cat('\nThe above t tests are for the Pearson correlations between the canonical variate scores')
-# cat('\nfor each function, i.e., they are not the multivariate significance tests.\n\n')
+# message('\nThe above t tests are for the Pearson correlations between the canonical variate scores')
+# message('\nfor each function, i.e., they are not the multivariate significance tests.\n')
 
   
 # raw canonical coefficients
-# cat('\n\n\n\nRaw canonical coefficients for Set 1:\n\n')
+# message('\n\nRaw canonical coefficients for Set 1:\n')
 colnames(output$raw1) <- paste('CV', 1:ncol(output$raw1),sep = "")
 # print(round(output$raw1,2))
 
-# cat('\n\nRaw canonical coefficients for Set 2:\n\n')
+# message('\n\nRaw canonical coefficients for Set 2:\n')
 colnames(output$raw2) <- paste('CV', 1:ncol(output$raw2),sep = "")
 # print(round(output$raw2,2))
 
 
 # structure coefficients (canonical loadings)
-# cat('\n\n\nStructure coefficients (Pearson correlations) for Set 1 variables with the Set 1 variates:\n\n')
+# message('\n\nStructure coefficients (Pearson correlations) for Set 1 variables with the Set 1 variates:\n')
 colnames(output$struct11) <- paste('CV', 1:ncol(output$struct11),sep = "")
 # print(round(output$struct11,2))
 
-# cat('\n\nStructure coefficients (Pearson correlations) for Set 2 variables with the Set 1 variates:\n\n')
+# message('\n\nStructure coefficients (Pearson correlations) for Set 2 variables with the Set 1 variates:\n')
 colnames(output$struct21) <- paste('CV', 1:ncol(output$struct21),sep = "")
 # print(round(output$struct21,2))
 
-# cat('\n\nStructure coefficients (Pearson correlations) for Set 1 variables with the Set 2 variates:\n\n')
+# message('\n\nStructure coefficients (Pearson correlations) for Set 1 variables with the Set 2 variates:\n')
 colnames(output$struct12) <- paste('CV', 1:ncol(output$struct12),sep = "")
 # print(round(output$struct12,2))
 
-# cat('\n\nStructure coefficients (Pearson correlations) for Set 2 variables with the Set 2 variates:\n\n')
+# message('\n\nStructure coefficients (Pearson correlations) for Set 2 variables with the Set 2 variates:\n')
 colnames(output$struct22) <- paste('CV', 1:ncol(output$struct22),sep = "")
 # print(round(output$struct22,2))
 
 
 # standardized canonical coefficients 
-# cat('\n\n\nStandardized coefficients for Set 1 variables:\n\n')
+# message('\n\nStandardized coefficients for Set 1 variables:\n')
 colnames(output$stand1) <- paste('CV', 1:ncol(output$stand1),sep = "")
 # print(round(output$stand1,2))
 
-# cat('\n\nStandardized coefficients for Set 2 variables:\n\n')
+# message('\n\nStandardized coefficients for Set 2 variables:\n')
 colnames(output$stand2) <- paste('CV', 1:ncol(output$stand2),sep = "")
 # print(round(output$stand2,2))
 
@@ -163,73 +163,73 @@ if (plot == TRUE | is.null(plot)) {
 	# boc.fit <- list( xstructcorr=struct11, ystructcorr=struct22, xstructcorrsq=struct11**2,
                      # ystructcorrsq=struct22**2, xlab=rownames(struct11), ylab=rownames(struct22) )
 	# yacca::helio.plot(boc.fit, x.name="Set 1", y.name="Set 2", cv=plotCV)
-	# cat('\n\n\nThe plot is provided by the yacca package. Helio plots display data in')
-	# cat('\nradial bars, with larger values pointing outward from a base reference circle')
-	# cat('\nand smaller (more negative) values pointing inward.')
+	# message('\n\nThe plot is provided by the yacca package. Helio plots display data in')
+	# message('\nradial bars, with larger values pointing outward from a base reference circle')
+	# message('\nand smaller (more negative) values pointing inward.')
 }
 
 
 
 if (verbose) {
 	
-	cat('\n\n\nCanonical Correlation Analysis\n')
+	message('\n\nCanonical Correlation Analysis')
 	 
-	if (NAflag) cat('\n\nCases with missing values were found and removed from the data matrix.\n\n')
+	if (NAflag) message('\n\nCases with missing values were found and removed from the data matrix.\n')
 		
-	cat('\n\nPearson correlations for Set 1:\n\n'); print(round(CorrelSet1,2), print.gap=4)
-	cat('\n\nPearson correlations for Set 2:\n\n'); print(round(CorrelSet2,2), print.gap=4)
-	cat('\n\nPearson correlations between Set 1 & Set 2:\n\n'); print(round(CorrelSet1n2,2), print.gap=4)
+	message('\n\nPearson correlations for Set 1:\n'); print(round(CorrelSet1,2), print.gap=4)
+	message('\n\nPearson correlations for Set 2:\n'); print(round(CorrelSet2,2), print.gap=4)
+	message('\n\nPearson correlations between Set 1 & Set 2:\n'); print(round(CorrelSet1n2,2), print.gap=4)
 	
-	cat('\n\n\nMultivariate peel-down significance tests:\n\n')
+	message('\n\nMultivariate peel-down significance tests:\n')
 	
-	print(round(mv_Wilk,4), print.gap=4); cat('\n\n')
+	print(round(mv_Wilk,4), print.gap=4); message('\n')
 	
-	print(round(mv_Pillai,4), print.gap=4); cat('\n\n')
+	print(round(mv_Pillai,4), print.gap=4); message('\n')
 	
-	print(round(mv_Hotelling,4), print.gap=4); cat('\n\n')
+	print(round(mv_Hotelling,4), print.gap=4); message('\n')
 	
-	print(round(mv_Roy,4), print.gap=4); cat('\n\n')
+	print(round(mv_Roy,4), print.gap=4); message('\n')
 	
-	cat('\n\n\nBartlett\'s V test:\n')
-	print(round(mv_BartlettV,4), print.gap=4); cat('\n\n')
+	message('\nBartlett\'s V test:\n')
+	print(round(mv_BartlettV,4), print.gap=4); message('\n')
 	
-	cat('\n\n\nRao\'s V test:\n')
-	print(round(mv_Rao,4), print.gap=4); cat('\n\n')
+	message('\nRao\'s V test:\n')
+	print(round(mv_Rao,4), print.gap=4); message('\n')
 		
 	# bivariate correlations for the canonical variates
-	cat('\n\n\nCanonical correlations:\n\n')
+	message('\nCanonical correlations:\n')
 	print(round(output$cancorrels,3), print.gap=4)
-	cat('\nThe above t tests are for the Pearson correlations between the canonical variate scores')
-	cat('\nfor each function, i.e., they are not the multivariate significance tests.\n\n')
+	message('\nThe above t tests are for the Pearson correlations between the canonical variate scores')
+	message('for each function, i.e., they are not the multivariate significance tests.\n')
 	
 	# raw canonical coefficients
-	cat('\n\n\n\nRaw canonical coefficients for Set 1:\n\n')
+	message('\n\nRaw canonical coefficients for Set 1:\n')
 	print(round(output$raw1,2), print.gap=4)
 	
-	cat('\n\nRaw canonical coefficients for Set 2:\n\n')
+	message('\n\nRaw canonical coefficients for Set 2:\n')
 	print(round(output$raw2,2), print.gap=4)
 	
 	# structure coefficients (canonical loadings)
-	cat('\n\n\nStructure coefficients (Pearson correlations) for Set 1 variables with the Set 1 variates:\n\n')
+	message('\n\nStructure coefficients (Pearson correlations) for Set 1 variables with the Set 1 variates:\n')
 	print(round(output$struct11,2), print.gap=4)
 	
-	cat('\n\nStructure coefficients (Pearson correlations) for Set 2 variables with the Set 1 variates:\n\n')
+	message('\n\nStructure coefficients (Pearson correlations) for Set 2 variables with the Set 1 variates:\n')
 	print(round(output$struct21,2), print.gap=4)
 	
-	cat('\n\nStructure coefficients (Pearson correlations) for Set 1 variables with the Set 2 variates:\n\n')
+	message('\n\nStructure coefficients (Pearson correlations) for Set 1 variables with the Set 2 variates:\n')
 	print(round(output$struct12,2), print.gap=4)
 	
-	cat('\n\nStructure coefficients (Pearson correlations) for Set 2 variables with the Set 2 variates:\n\n')
+	message('\n\nStructure coefficients (Pearson correlations) for Set 2 variables with the Set 2 variates:\n')
 	print(round(output$struct22,2), print.gap=4)
 	
 	# standardized canonical coefficients 
-	cat('\n\n\nStandardized coefficients for Set 1 variables:\n\n')
+	message('\n\nStandardized coefficients for Set 1 variables:\n')
 	print(round(output$stand1,2), print.gap=4)
 	
-	cat('\n\nStandardized coefficients for Set 2 variables:\n\n')
+	message('\n\nStandardized coefficients for Set 2 variables:\n')
 	print(round(output$stand2,2), print.gap=4)
 	
-	cat('\n\n\n\n')
+	message('\n\n')
 }
 
 

@@ -1,8 +1,8 @@
-\name{homogeneity}
-\alias{homogeneity}
+\name{HOMOGENEITY}
+\alias{HOMOGENEITY}
 \title{Homogeneity of variances and covariances}
 \description{Produces tests of the homogeneity of variances and covariances.}
-\usage{homogeneity(data, groups, variables, verbose)}
+\usage{HOMOGENEITY(data, groups, variables, verbose)}
 \arguments{
 \item{data}{
 \code{}A dataframe where the rows are cases & the columns are the variables.}
@@ -58,12 +58,12 @@ of variances, with applications to the outer continental shelf bidding data. \em
 \author{Brian P. O'Connor }
 \examples{
 # data from Field et al. (2012)
-homogeneity(data = data_DFA_Field,
+HOMOGENEITY(data = data_DFA_Field,
             groups = 'Group', variables = c('Actions','Thoughts'))
 
 \donttest{
 # data from Sherry (2006)
-homogeneity(data = data_DFA_Sherry,
+HOMOGENEITY(data = data_DFA_Sherry,
             groups = 'Group',
             variables = c('Neuroticism','Extroversion','Openness',
                           'Agreeableness','Conscientiousness'))

@@ -1,9 +1,9 @@
-\name{plot_linearity}
-\alias{plot_linearity}
+\name{PLOT_LINEARITY}
+\alias{PLOT_LINEARITY}
 \title{Plot for linearity}
 \description{Plots the linear, quadratic, and loess regression lines for the
 	association between two continuous variables.}
-\usage{plot_linearity(data, idv, dv, groups=NULL, groupNAME=NULL, legposition=NULL, 
+\usage{PLOT_LINEARITY(data, idv, dv, groups=NULL, groupNAME=NULL, legposition=NULL, 
 	                  leginset=NULL, verbose=TRUE)}
 \arguments{
   \item{data}{
@@ -43,22 +43,21 @@
 	   The returned output is a list with the regression 
 	   coefficients and the plot data.}
 \references{
- {Tabachnik, B. G., & Fidell, L. S. (2013). \emph{Using multivariate 
- 		statistics (6th. ed., pp. 83-84).} New York, NY: Pearson.}
+Tabachnik, B. G., & Fidell, L. S. (2019). \emph{Using multivariate statistics (7th ed.).} New York, NY: Pearson.
 }
 \author{Brian P. O'Connor }
 \examples{
 # data that simulate those from De Leo & Wulfert (2013)
-plot_linearity(data=data_CCA_De_Leo, groups=NULL, 
+PLOT_LINEARITY(data=data_CCA_De_Leo, groups=NULL, 
                idv='Family_Conflict', dv='Grade_Point_Average', verbose=TRUE)
 
 \donttest{
 # data from Sherry (2006), ignoring the groups
-plot_linearity(data=data_DFA_Sherry, groups=NULL, groupNAME=NULL,
+PLOT_LINEARITY(data=data_DFA_Sherry, groups=NULL, groupNAME=NULL,
                idv='Neuroticism', dv='Conscientiousness', verbose=TRUE)
 
 # data from Sherry (2006), group 2 only
-plot_linearity(data=data_DFA_Sherry, groups ='Group', groupNAME=2,
+PLOT_LINEARITY(data=data_DFA_Sherry, groups ='Group', groupNAME=2,
                idv='Neuroticism', dv='Conscientiousness', verbose=TRUE)
  }
 

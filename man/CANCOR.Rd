@@ -56,11 +56,12 @@
 \references{
 	   {Manly, B. F. J., & Alberto, J. A. (2017). \emph{Multivariate statistical methods: 
 	   	A primer (4th Edition).} Chapman & Hall/CRC, Boca Raton, FL.}
+\cr\cr {Rencher, A. C. (2002). \emph{Methods of Multivariate Analysis} (2nd ed.). New York, NY: John Wiley & Sons.}
 \cr\cr {Sherry, A., & Henson, R. K. (2005). Conducting and interpreting canonical correlation analysis
         in personality research: A user-friendly primer. \emph{Journal of Personality Assessment, 84,} 37-48.}
 \cr\cr {Steiger, J. (2019). \emph{Canonical correlation analysis.}
 	    \cr{www.statpower.net/Content/312/Lecture\%20Slides/CanonicalCorrelation.pdf}}
-\cr\cr {Tabachnik, B. G., & Fidell, L. S. (2013). \emph{Using multivariate statistics (6th. ed.).} New York, NY: Pearson.}
+\cr\cr {Tabachnik, B. G., & Fidell, L. S. (2019). \emph{Using multivariate statistics (7th ed.).} New York, NY: Pearson.}
 }
 \author{Brian P. O'Connor }
 \examples{

@@ -3,10 +3,10 @@
 \docType{data}
 \title{data_CCA_Tabachnik}
 \description{A data frame with scores on 4 variables for 8 cases. Used by 
-	Tabachnik & Fidell (2013, p. 589) in their chapter on canonical correlation.}
+	Tabachnik & Fidell (2019, p. 451) in their chapter on canonical correlation.}
 \usage{data(data_CCA_Tabachnik)}
-\source{Tabachnik, B. G., & Fidell, L. S. (2013). \emph{Using multivariate 
-	statistics (6th ed.).} New York, NY: Pearson.}
+\source{Tabachnik, B. G., & Fidell, L. S. (2019). \emph{Using multivariate 
+	statistics (7th ed.).} New York, NY: Pearson.}
 \examples{
 \donttest{
 head(data_CCA_Tabachnik)
