@@ -61,43 +61,40 @@
 	   and extensive output from predictive discriminant function analyses (if requested).
 	   		   	   
 	   The returned output is a list with elements
-  \item{rawCoef}{canonical discriminant function coefficients}
-  \item{structCoef}{structure coefficients}
-  \item{standCoef}{standardized coefficients}
-  \item{standCoefSPSS}{standardized coefficients from SPSS}
+
+  \item{evals}{eigenvalues and canonical correlations}
+  \item{mv_Wilk}{The Wilk's lambda multivariate test}
+  \item{mv_Pillai}{The Pillai-Bartlett multivariate test}
+  \item{mv_Hotelling}{The Lawley-Hotelling multivariate test}
+  \item{mv_Roy}{Roy's greatest characteristic root multivariate test}
+  \item{coefs_raw}{canonical discriminant function coefficients}
+  \item{coefs_structure}{structure coefficients}
+  \item{coefs_standardized}{standardized coefficients}
+  \item{coefs_standardizedSPSS}{standardized coefficients from SPSS}
   \item{centroids}{unstandardized canonical discriminant functions evaluated at the group means}
   \item{centroidSDs}{group standard deviations on the unstandardized functions}
   \item{centroidsZ}{standardized canonical discriminant functions evaluated at the group means}
   \item{centroidSDsZ}{group standard deviations on the standardized functions}
-  \item{DFAscores}{scores on the discriminant functions}
+  \item{dfa_scores}{scores on the discriminant functions}
   \item{anovaDFoutput}{One-way ANOVAs using the scores on a discriminant function as the DV}
   \item{anovaDVoutput}{One-way ANOVAs on the original DVs}
   \item{MFWER1.sigtest}{Significance tests when controlling the MFWER by (only) carrying out multiple t tests}
-  \item{MFWER2.sigtest}{Significance tests for the two-stage approach to controling the MFWER}
-  \item{dfa_class}{The predicted group classifications}
+  \item{MFWER2.sigtest}{Significance tests for the two-stage approach to controling the MFWER}  
+  \item{classes_PRED}{The predicted group classifications}  
+  \item{classes_CV}{The classifications from leave-one-out cross-validations, if requested}  
   \item{posteriors}{The posterior probabilities for the predicted group classifications}
-  \item{freqs_OR}{Cross-tabulation of the original and predicted group memberships}
-  \item{PropOrigCorrect}{Proportion of original grouped cases correctly classified}
-  \item{chi_square_OR}{Chi-square test of independence}
-  \item{PressQ_OR}{Press's Q significance test of classifiation accuracy for original vs. predicted group memberships}
-  \item{rowfreqs_OR}{Row Frequencies}
-  \item{colfreqs_OR}{Column Frequencies}
-  \item{cellprops_OR}{Cell Proportions}
-  \item{rowprops_OR}{Row-Based Proportions}
-  \item{colprops_OR}{Column-Based Proportions}
-  \item{kappas_cvo_OR}{Agreement (kappas) between the predicted and original group memberships}
-  \item{dfa_class_CV}{Classifications from leave-one-out cross-validations}
-  \item{freqs_CV}{Cross-Tabulation of the cross-validated and predicted group memberships}
+  \item{grp_post_stats}{Group mean posterior classification probabilities}
+  \item{classes_CV}{Classifications from leave-one-out cross-validations}
+  \item{freqs_ORIG_PRED}{Cross-tabulation of the original and predicted group memberships}
+  \item{chi_square_ORIG_PRED}{Chi-square test of independence}
+  \item{PressQ_ORIG_PRED}{Press's Q significance test of classifiation accuracy for original vs. predicted group memberships}
+  \item{kappas_ORIG_PRED}{Agreement (kappas) between the predicted and original group memberships}
+  \item{PropOrigCorrect}{Proportion of original grouped cases correctly classified}  
+  \item{freqs_ORIG_CV}{Cross-Tabulation of the cross-validated and predicted group memberships}
+  \item{chi_square_ORIG_CV}{Chi-square test of indepedence}
+  \item{PressQ_ORIG_CV}{Press's Q significance test of classifiation accuracy for cross-validated vs. predicted group memberships}
+  \item{kappas_ORIG_CV}{Agreement (kappas) between the cross-validated and original group memberships}
   \item{PropCrossValCorrect}{Proportion of cross-validated grouped cases correctly classified}
-  \item{chi_square_CV}{Chi-square test of indepedence}
-  \item{PressQ_CV}{Press's Q significance test of classifiation accuracy for cross-validated vs. predicted group memberships}
-  \item{rowfreqs_CV}{Row frequencies}
-  \item{colfreqs_CV}{Column frequencies}
-  \item{cellprops_CV}{Cell proportions}
-  \item{rowprops_CV}{Row-based proportions}
-  \item{colprops_CV}{Column-based proportions}
-  \item{kappas_cvoCV}{Agreement (kappas) between the cross-validated and original group memberships}
-  \item{kappas_CVP}{Agreement (kappas) between the cross-validated and predicted group memberships}
 }
 \references{
        {Bird, K. D., & Hadzi-Pavlovic, D. (2013). Controlling the maximum familywise Type I error 
@@ -110,11 +107,13 @@
 }
 \author{Brian P. O'Connor}
 \examples{
-DFA_Field=DFA(data = data_DFA_Field, 
+# data from Field et al. (2012, Chapter 16 MANOVA)
+DFA_Field=DFA(data = data_DFA$Field_2012, 
     groups = 'Group', 
     variables = c('Actions','Thoughts'),
-    predictive = TRUE, priorprob = 'SIZES', 
-    covmat_type='separate', # altho better to used 'separate' for these data
+    predictive = TRUE, 
+    priorprob = 'EQUAL',   
+    covmat_type='within', # altho better to use 'separate' for these data
     verbose = TRUE)
 
 \donttest{
@@ -153,11 +152,113 @@ plot(DFA_Field$posteriors$posterior_CBT, DFA_Field$posteriors$posterior_BT,
 legend(x=.8, y=.99, c('CBT','BT','NT'), cex=1.2, col=c('red', 'blue', 'green'), pch=16, bty='n')
 
 
-DFA_Sherry <- DFA(data = data_DFA_Sherry, 
-                  groups = 'Group',
+# data from Green & Salkind (2008, Lesson 35)  
+DFA(data = data_DFA$Green_2008,
+    groups = 'job_cat', 
+    variables = c('friendly','gpa','job_hist','job_test'),
+    plot=TRUE,
+    predictive = TRUE,
+    priorprob = 'SIZES',  
+    covmat_type='within', 
+    CV=TRUE, 
+    verbose=TRUE) 
+
+
+# data from Ho (2014, Chapter 15) 
+# with group_1 as numeric 
+DFA(data = data_DFA$Ho_2014,
+    groups = 'group_1_num',
+    variables = c("fast_ris", "disresp", "sen_seek", "danger"),
+    plot=TRUE,
+    predictive = TRUE,
+    priorprob = 'SIZES', 
+    covmat_type='within', 
+    CV=TRUE, 
+    verbose=TRUE) 
+
+
+# data from Ho (2014, Chapter 15)   
+# with group_1 as a factor 
+DFA(data = data_DFA$Ho_2014,
+    groups = 'group_1_fac',
+    variables = c("fast_ris", "disresp", "sen_seek", "danger"),
+    plot=TRUE,
+    predictive = TRUE,
+    priorprob = 'SIZES', 
+    covmat_type='within', 
+    CV=TRUE, 
+    verbose=TRUE) 
+
+
+# data from Huberty (2006, p 45)
+DFA_Huberty=DFA(data = data_DFA$Huberty_2019_p45, 
+    groups = 'treatmnt_S', 
+    variables = c('Y1','Y2'),
+    predictive = TRUE, 
+    priorprob = 'SIZES', 
+    covmat_type='separate', # altho better to used 'separate' for these data
+    verbose = TRUE)
+
+
+# data from Huberty (2006, p 285)
+DFA_Huberty=DFA(data = data_DFA$Huberty_2019_p285, 
+    groups = 'Grade', 
+    variables = c('counsum','gainsum','learnsum','qelib','qefac','qestacq',
+                  'qeamt','qewrite','qesci'),
+    predictive = TRUE, 
+    priorprob = 'EQUAL', 
+    covmat_type='within', 
+    verbose = TRUE)
+
+
+# data from Norusis (2012, Chaper 15)  
+DFA_Norusis=DFA(data = data_DFA$Norusis_2012, 
+    groups = 'internet', 
+    variables = c('age','gender','income','kids','suburban','work','yearsed'),
+    predictive = TRUE, 
+    priorprob = 'EQUAL', 
+    covmat_type='within', 
+    verbose = TRUE)
+
+
+# data from Rencher (2002, p 170)  - rootstock
+DFA(data = data_DFA$Rencher_2002_root, 
+    groups = 'rootstock', 
+    variables = c('girth4','ext4','girth15','weight15'),
+    predictive = TRUE, 
+    priorprob = 'SIZES',
+	covmat_type='within',     
+	verbose = TRUE)
+
+
+# data from Rencher (2002, p 280)  - football
+DFA(data = data_DFA$Rencher_2002_football, 
+    groups = 'grp', 
+    variables = c('WDIM','CIRCUM','FBEYE','EYEHD','EARHD','JAW'),
+    predictive = TRUE, 
+    priorprob = 'SIZES',
+	covmat_type='separate',     
+	verbose = TRUE)
+
+
+# Sherry (2006)   -  with Group as numeric 
+DFA_Sherry <- DFA(data = data_DFA$Sherry_2006, 
+                  groups = 'Group_num',
                   variables = c('Neuroticism','Extroversion','Openness', 
                                 'Agreeableness','Conscientiousness'),
-                  predictive = TRUE, priorprob = 'SIZES', 
+                  predictive = TRUE, 
+                  priorprob = 'SIZES', 
+                  covmat_type='separate', 
+                  verbose = TRUE)
+
+
+# Sherry (2006)   -  with Group as a factor 
+DFA_Sherry <- DFA(data = data_DFA$Sherry_2006, 
+                  groups = 'Group_fac',
+                  variables = c('Neuroticism','Extroversion','Openness', 
+                                'Agreeableness','Conscientiousness'),
+                  predictive = TRUE, 
+                  priorprob = 'SIZES', 
                   covmat_type='separate', 
                   verbose = TRUE)
 
@@ -193,27 +294,48 @@ plot(DFA_Sherry$posteriors$posterior_2, DFA_Sherry$posteriors$posterior_3,
      xlab='Posterior Probability of Being in Group 2',
      ylab='Posterior Probability of Being in Group 3' )
 legend(x=.8, y=.99, c('1','2','3'), cex=1.2, col=c('red', 'blue', 'green'), pch=16, bty='n')
-
-
     
-# data from Tabachnik & Fiddel (2019, p 307)
-table9.1 <- '
-1  87  5 31 6.4
-1  97  7 36 8.3
-1 112  9 42 7.2
-2 102 16 45 7.0
-2  85 10 38 7.6
-2  76  9 32 6.2
-3 120 12 30 8.4
-3  85  8 28 6.3
-3  99  9 27 8.2'
-table9.1 <- data.frame(read.table(text=table9.1, 
-                       col.names=c('group','perf','info','verbexp','age')))
 
-DFA(data = table9.1, 
-    groups = 'group', 
+# Tabachnik & Fiddel (2019, p 307, 311)   - small - with group as numeric
+DFA(data = data_DFA$TabFid_2019_small, 
+    groups = 'group_num', 
     variables = c('perf','info','verbexp','age'),
-    predictive = TRUE, priorprob = 'SIZES', covmat_type='within', 
+    predictive = TRUE, 
+    priorprob = 'SIZES', 
+    covmat_type='within', 
     verbose = TRUE)  
+    
+    
+# Tabachnik & Fiddel (2019, p 307, 311)   - small - with group as a factor
+DFA(data = data_DFA$TabFid_2019_small, 
+    groups = 'group_fac', 
+    variables = c('perf','info','verbexp','age'),
+    predictive = TRUE, 
+    priorprob = 'SIZES', 
+    covmat_type='within', 
+    verbose = TRUE)  
+
+
+# Tabachnik & Fiddel (2019, p 324)   - complete  - with WORKSTAT as numeric 
+DFA(data = data_DFA$TabFid_2019_complete, 
+    groups = 'WORKSTAT_num', 
+    variables = c('CONTROL','ATTMAR','ATTROLE','ATTHOUSE'),
+    plot=TRUE,
+    predictive = TRUE,
+    priorprob = 'SIZES',  
+    covmat_type='within', 
+    CV=TRUE, 
+    verbose=TRUE) 
+
+# Tabachnik & Fiddel (2019, p 324)   - complete  -  with WORKSTAT as a factor  
+DFA(data = data_DFA$TabFid_2019_complete, 
+    groups = 'WORKSTAT_fac', 
+    variables = c('CONTROL','ATTMAR','ATTROLE','ATTHOUSE'),
+    plot=TRUE,
+    predictive = TRUE,
+    priorprob = 'SIZES',  
+    covmat_type='within', 
+    CV=TRUE, 
+    verbose=TRUE) 
 }
 }

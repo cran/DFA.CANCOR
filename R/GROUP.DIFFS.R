@@ -75,7 +75,7 @@ for (lupe1 in 1:(Ngroups-1)) {
 		# Bayes factor -- http://daniellakens.blogspot.com/2014/09/bayes-factors-and-p-values-for.html
 		# bb = ttestBF(formula = newdon[,2] ~ newdon[,1], data = newdon);   ee=extractBF(bb); ee
 		# bb = ttestBF(x = newdon[1:10,2], y= newdon[11:20,2]);   ee=extractBF(bb); ee
-		BF_h0h1 <- exp(-ttest.tstat( (tgroups),N1,N2,rscale=1)$bf)
+		BF_h0h1 <- exp(suppressMessages(-ttest.tstat( (tgroups),N1,N2,rscale=1)$bf))
 
 		BF_h1h0 <- 1 / BF_h0h1
 

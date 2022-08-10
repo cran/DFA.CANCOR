@@ -41,7 +41,7 @@
 \author{Brian P. O'Connor }
 \examples{
 # data that simulate those from De Leo & Wulfert (2013)
-NORMALITY(data = na.omit(data_CCA_De_Leo[c(
+NORMALITY(data = na.omit(data_CANCOR$DeLeo_2013[c(
           'Unprotected_Sex','Tobacco_Use','Alcohol_Use','Illicit_Drug_Use',
           'Gambling_Behavior','CIAS_Total','Impulsivity','Social_Interaction_Anxiety',
           'Depression','Social_Support','Intolerance_of_Deviance','Family_Morals',
@@ -49,12 +49,12 @@ NORMALITY(data = na.omit(data_CCA_De_Leo[c(
  
 \donttest{
 # data from Field et al. (2012)
-NORMALITY(data = data_DFA_Field, 
+NORMALITY(data = data_DFA$Field_2012, 
           groups = 'Group', 
           variables = c('Actions','Thoughts'))
 
 # data from Tabachnik & Fidell (2013, p. 589)
-NORMALITY(data = na.omit(data_CCA_Tabachnik[c('TS','TC','BS','BC')]))
+NORMALITY(data = na.omit(data_CANCOR$TabFid_2019_small[c('TS','TC','BS','BC')]))
 
 # UCLA dataset
 UCLA_CCA_data <- read.csv("https://stats.idre.ucla.edu/stat/data/mmreg.csv")

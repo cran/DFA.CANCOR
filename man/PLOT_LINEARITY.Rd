@@ -48,16 +48,16 @@ Tabachnik, B. G., & Fidell, L. S. (2019). \emph{Using multivariate statistics (7
 \author{Brian P. O'Connor }
 \examples{
 # data that simulate those from De Leo & Wulfert (2013)
-PLOT_LINEARITY(data=data_CCA_De_Leo, groups=NULL, 
+PLOT_LINEARITY(data=data_CANCOR$DeLeo_2013, groups=NULL, 
                idv='Family_Conflict', dv='Grade_Point_Average', verbose=TRUE)
 
 \donttest{
 # data from Sherry (2006), ignoring the groups
-PLOT_LINEARITY(data=data_DFA_Sherry, groups=NULL, groupNAME=NULL,
+PLOT_LINEARITY(data=data_DFA$Sherry_2006, groups=NULL, groupNAME=NULL,
                idv='Neuroticism', dv='Conscientiousness', verbose=TRUE)
 
 # data from Sherry (2006), group 2 only
-PLOT_LINEARITY(data=data_DFA_Sherry, groups ='Group', groupNAME=2,
+PLOT_LINEARITY(data=data_DFA$Sherry_2006, groups ='Group', groupNAME=2,
                idv='Neuroticism', dv='Conscientiousness', verbose=TRUE)
  }
 

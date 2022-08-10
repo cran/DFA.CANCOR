@@ -235,6 +235,12 @@ if (verbose) {
 
 CANCORoutput <- list(  
    cancorrels = cancorrels,
+   mv_Wilk = mv_Wilk,
+   mv_Pillai = mv_Pillai,
+   mv_Hotelling = mv_Hotelling,
+   mv_Roy = mv_Roy,
+   mv_BartlettV = mv_BartlettV,
+   mv_Rao = mv_Rao,
    CoefRawSet1 = output$raw1,
    CoefRawSet2 = output$raw2,
    CoefStruct11 = output$struct11,
@@ -243,12 +249,6 @@ CANCORoutput <- list(
    CoefStruct22 = output$struct22,
    CoefStandSet1 = output$stand1,
    CoefStandSet2 = output$stand2,   
-   mv_Wilk = mv_Wilk,
-   mv_Pillai = mv_Pillai,
-   mv_Hotelling = mv_Hotelling,
-   mv_Roy = mv_Roy,
-   mv_BartlettV = mv_BartlettV,
-   mv_Rao = mv_Rao,
    CorrelSet1 = CorrelSet1,
    CorrelSet2 = CorrelSet2,
    CorrelSet1n2 = CorrelSet1n2

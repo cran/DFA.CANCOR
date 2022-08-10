@@ -80,10 +80,10 @@
 }
 \author{Brian P. O'Connor}
 \examples{
-GROUP.DIFFS(data_DFA_Field, var.equal=FALSE, p.adjust.method="fdr")
+GROUP.DIFFS(data_DFA$Field_2012, var.equal=FALSE, p.adjust.method="fdr")
 
 \donttest{
-GROUP.DIFFS(data = data_DFA_Sherry, var.equal=FALSE, p.adjust.method="bonferroni")    
+GROUP.DIFFS(data = data_DFA$Sherry_2006, var.equal=FALSE, p.adjust.method="bonferroni")    
 }
 }
 	% The Bayes factor tests the null hypothesis that the mean difference of a normal population is 0. 

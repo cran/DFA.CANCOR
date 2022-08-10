@@ -11,3 +11,6 @@ importFrom("graphics", "matplot", "axis", "legend", "title", "barplot", "box",
 importFrom("MVN", "mvn")
 
 importFrom("BayesFactor", "ttest.tstat", "anovaBF","extractBF")
+
+importFrom(utils, packageDescription)
+

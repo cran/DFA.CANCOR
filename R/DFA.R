@@ -14,22 +14,53 @@ if (anyNA(donnes) == TRUE) {
 }
 
 
-grpnames <- as.vector(as.matrix(donnes[groups])) # group names, in the same order as in the data matrix
-grpnames <- unique(grpnames)
+if (is.factor(donnes[,1])) {
+	grp_levels <- levels(donnes[,1])
+	# grp_labels <- labels(donnes[,1])	
+}
+
+if (!is.factor(donnes[,1])) {
+	donnes[,1] <- factor(donnes[,1], ordered = FALSE)
+	grp_levels <- levels(donnes[,1])
+}
+
+
+grpnames <- grp_levels
+
+
+# grpnames <- as.vector(as.matrix(donnes[groups])) # group names, in the same order as in the data matrix
+# grpnames <- unique(grpnames)
 grpnums  <- seq(1:length(grpnames))
+
 Ngroups  <- length(grpnames)
 Ndvs <- ncol(donnes) - 1
 Ndfs <- min( (Ngroups-1), Ndvs)
 Ncases <- nrow(donnes)
 
 
-if (is.factor(donnes[,1]) == FALSE)  donnes[,1] <- factor(donnes[,1], ordered = FALSE, 
-                                                          labels=grpnames, levels=grpnames)
+# if (!is.factor(donnes[,1]))  donnes[,1] <- factor(donnes[,1], ordered = FALSE, labels=grpnames, levels=grpnames)
 
 donnes <- as.data.frame(donnes)
 
-groupNs <- as.matrix(table(donnes[,1]))
 DVnames <- colnames(donnes[,2:(Ndvs+1)])
+
+
+groupNs <- table(donnes[,1])
+groupNs <- groupNs[grpnames] # because table gives results in alphabetical order
+
+# groupNs <- as.matrix(table(donnes[,1]))
+	# # Group Sizes
+	# # groupNs <- aggregate(x = DFAposteriors[,postvarnoms[1]], by = list(DFAposteriors$Group), FUN=length)[,2]
+	# # names(groupNs) <- grpnames
+	# groupNs <- table(DFAposteriors$Group)
+# groupNs[order(match(groupNs,grpnames))]
+
+
+grpmeans <- sapply(2:ncol(donnes), function(x) tapply(donnes[,x], INDEX = donnes[,1], FUN = mean))
+grpmeans <- grpmeans[grpnames,] # resorting rows because mean gives results in alphabetical order
+
+
+
 
 
 # from my homovarcovar function:
@@ -84,11 +115,11 @@ rownames(coefs_raw) <-  DVnames
 # https://stackoverflow.com/questions/68307682/r-lda-linear-discriminant-analysis-how-to-get-compute-lda-scores-from-lda-co
 
 # 1 -- Calculate the group means for each variable
-grpmeans <- sapply(2:(Ndvs+1), function(x) tapply(donnes[,x], INDEX = donnes[,1], FUN = mean))
+# grpmeans <- sapply(2:(Ndvs+1), function(x) tapply(donnes[,x], INDEX = donnes[,1], FUN = mean))
 
 # 2 -- Calculate the mean of group means for each variable -- BOC = must be weighted grp means, by grp Ns
 # center <- colMeans(grpmeans)
-groupNs <- table(donnes[,1])
+# groupNs <- table(donnes[,1])
 center <- apply(grpmeans, 2, function(m, w) { sum(m * w) / sum(w) }, w=groupNs)
 
 # 3 -- Center the data at the mean of group means
@@ -123,10 +154,10 @@ for (luper in 1:Ndfs) {
 	anovaDFoutput[luper,4] <- fit$df.residual
 	anovaDFoutput[luper,5] <- stats::anova(fit)["as.factor(grp)","Pr(>F)"]
 
-	anBF <- anovaBF(dv ~ grp, data = dd, progress=FALSE)
-	anovaDFoutput[luper,6] <- as.numeric(extractBF(anBF)[1])
+	anBF <- suppressMessages(anovaBF(dv ~ grp, data = dd, progress=FALSE))
+	anovaDFoutput[luper,6] <- as.numeric(suppressMessages(extractBF(anBF)[1]))
 
-	anovaDFoutput[luper,7] <- 1 / as.numeric(extractBF(anBF)[1])
+	anovaDFoutput[luper,7] <- 1 / as.numeric(suppressMessages(extractBF(anBF)[1]))
 
 	ttestDFoutput[[luper]] <- GROUP.DIFFS(dd, var.equal=FALSE, verbose=FALSE)			
 
@@ -199,13 +230,31 @@ colnames(coefs_standardizedSPSS) <- c(paste("Function ", 1:ncol(coefs_standardiz
 # Centroids	
 # group means & SDs on the raw ldfs
 centroids   <- sapply(2:(Ndfs+1), function(x) tapply(dfa_scores[,x], INDEX = dfa_scores[,1], FUN = mean))
-centroidSDs <- sapply(2:(Ndfs+1), function(x) tapply(dfa_scores[,x], INDEX = dfa_scores[,1], FUN = sd))
+centroidsSDs <- sapply(2:(Ndfs+1), function(x) tapply(dfa_scores[,x], INDEX = dfa_scores[,1], FUN = sd))
 # group means & SDs on the standardized ldfs
 dfa_scoresZ <- data.frame(dfa_scores[,1], scale(dfa_scores[,2:(Ndfs+1)]))
 centroidsZ   <- sapply(2:(Ndfs+1), function(x) tapply(dfa_scoresZ[,x], INDEX = dfa_scoresZ[,1], FUN = mean))
-centroidSDsZ <- sapply(2:(Ndfs+1), function(x) tapply(dfa_scoresZ[,x], INDEX = dfa_scoresZ[,1], FUN = sd))
-colnames(centroids) <- colnames(centroidSDs) <- colnames(centroidsZ) <- colnames(centroidSDsZ) <- colnames(coefs_raw)
-rownames(centroids) <- rownames(centroidSDs) <- rownames(centroidsZ) <- rownames(centroidSDsZ) <- grpnames
+centroidsSDsZ <- sapply(2:(Ndfs+1), function(x) tapply(dfa_scoresZ[,x], INDEX = dfa_scoresZ[,1], FUN = sd))
+colnames(centroids) <- colnames(centroidsSDs) <- colnames(centroidsZ) <- colnames(centroidsSDsZ) <- colnames(coefs_raw)
+
+# rownames(centroids) <- rownames(centroidsSDs) <- rownames(centroidsZ) <- rownames(centroidsSDsZ) <- grpnames  -- prob
+
+# resorting rows to be consistent with the groups appearing in the same order as they do in donnes
+centroids     <- centroids[grpnames,] 
+centroidsSDs  <- centroidsSDs[grpnames,] 
+centroidsZ    <- centroidsZ[grpnames,] 
+centroidsSDsZ <- centroidsSDsZ[grpnames,] 
+
+if (Ndfs == 1) {
+	centroids     <- matrix(centroids,     length(centroids),     1)  
+	centroidsSDs  <- matrix(centroidsSDs,  length(centroidsSDs),  1)  
+	centroidsZ    <- matrix(centroidsZ,    length(centroidsZ),    1)
+	centroidsSDsZ <- matrix(centroidsSDsZ, length(centroidsSDsZ), 1)  
+	
+	colnames(centroids) <- colnames(centroidsSDs) <- colnames(centroidsZ) <- colnames(centroidsSDsZ) <- "Function 1"
+	rownames(centroids) <- rownames(centroidsSDs) <- rownames(centroidsZ) <- rownames(centroidsSDsZ) <- grpnames
+}
+
 
 
 # one-way ANOVAs using the scores on a discriminant function as the DV
@@ -232,7 +281,7 @@ for (lupec in 1:length(variables)) {
 	anovaDVoutput[lupec,4] <- fit$df.residual
 	anovaDVoutput[lupec,5] <- stats::anova(fit)["as.factor(grp)","Pr(>F)"]
 
-	anBF <- anovaBF(dv ~ grp, data = ddd, progress=FALSE)
+	anBF <- suppressMessages(anovaBF(dv ~ grp, data = ddd, progress=FALSE))
 	anovaDVoutput[lupec,6] <- as.numeric(extractBF(anBF)[1])
 
 	anovaDVoutput[lupec,7] <- 1 / as.numeric(extractBF(anBF)[1])
@@ -247,14 +296,19 @@ anovaDVoutput[,5] <- anovaDVoutput[,5]
 
 
 DFAoutput <- list(  
+   evals = evals,
+   mv_Wilk =mv_Wilk,
+   mv_Pillai = mv_Pillai,
+   mv_Hotelling = mv_Hotelling,
+   mv_Roy = mv_Roy,
    coefs_raw=coefs_raw,
    coefs_structure=coefs_structure,
    coefs_standardized=coefs_standardized,
    coefs_standardizedSPSS=coefs_standardizedSPSS,
    centroids=centroids,
-   centroidSDs=centroidSDs,
+   centroidsSDs=centroidsSDs,
    centroidsZ=centroidsZ,
-   centroidSDsZ=centroidSDsZ,
+   centroidsSDsZ=centroidsSDsZ,
    dfa_scores=dfa_scores,
    anovaDFoutput = anovaDFoutput,
    anovaDVoutput = anovaDVoutput
@@ -269,7 +323,6 @@ lsnoms <- names(ttestDVoutput)
 if (Ngroups == 2) {
 	# Two Groups 
 	# Critical values for analyses controlling MFWER when k = 2 
-	Ncases <- 40
 	P <- Ndvs
 	ALPHA <- 0.05 
 	# Critical t and p values and confidence level for t* analysis 
@@ -338,85 +391,120 @@ if (Ngroups > 2) {
 	
 	
 
-if (predictive == TRUE | is.null(predictive)) {
+if (predictive | is.null(predictive)) {
 
-	classes <- DFA_classes(donnes=donnes, grpmeans=grpmeans, Ngroups=Ngroups, groupNs=groupNs, grpnames=grpnames,
-	                       Ncases=Ncases, W=W, priorprob=priorprob, covmat_type=covmat_type )
+	classes_PRED <- DFA_classes(donnes=donnes, grpmeans=grpmeans, Ngroups=Ngroups, groupNs=groupNs, grpnames=grpnames,
+	                            Ncases=Ncases, W=W, priorprob=priorprob, covmat_type=covmat_type )
 
-	freqs_OR <- squareTable(var1=donnes[,1], var2=classes$dfa_class, grpnames, tabdimnames=c('Original','Predicted'))
+	freqs_ORIG_PRED <- squareTable(var1=donnes[,1], var2=classes_PRED$dfa_class, faclevels=grpnames, tabdimnames=c('Original','Predicted'))
 	
-	PropOrigCorrect <- round((sum(diag(freqs_OR)) / sum(freqs_OR)),3)
-	
-	chi_square_OR <- summary(freqs_OR)
-	PressQ_OR <- PressQ(freqs_OR)
-	
-	rowfreqs_OR <- margin.table(freqs_OR, 1)
-	colfreqs_OR <- margin.table(freqs_OR, 2)
-	
-	cellprops_OR <- prop.table(freqs_OR)
-	rowprops_OR  <- prop.table(freqs_OR, 1)
-	colprops_OR  <- prop.table(freqs_OR, 2)
-	
-	kappas_cvo_OR <- kappas(var1=donnes[,1], var2=classes$dfa_class, grpnames)
+	chi_square_ORIG_PRED <- summary(freqs_ORIG_PRED)
 
+	PressQ_ORIG_PRED <- PressQ(freqs_ORIG_PRED)
+
+	kappas_ORIG_PRED <- kappas(var1=donnes[,1], var2=classes_PRED$dfa_class, grpnames)
+	
+	PropOrigCorrect <- round((sum(diag(freqs_ORIG_PRED)) / sum(freqs_ORIG_PRED)),3)	
+	
+	# rowfreqs_ORIG_PRED <- margin.table(freqs_ORIG_PRED, 1)
+	# colfreqs_ORIG_PRED <- margin.table(freqs_ORIG_PRED, 2)
+	# cellprops_ORIG_PRED <- prop.table(freqs_ORIG_PRED)
+	# rowprops_ORIG_PRED  <- prop.table(freqs_ORIG_PRED, 1)
+	# colprops_ORIG_PRED  <- prop.table(freqs_ORIG_PRED, 2)
+	
 	# posterior probability stats
-	grp_post_stats <- DFC_post_class_stats(classes$posteriors, grpnames=grpnames, verbose=FALSE) 
-	
+	grp_post_stats <- DFC_post_class_stats(classes_PRED$posteriors, grpnames=grpnames, 
+	                                       Ngroups=Ngroups, groupNs=groupNs, verbose=FALSE) 
+
+
+	# faclevels <- levels(donnes[,1])
+		
 	if (CV) {
-		# Frequencies: Original vs Cross-Validated (leave-one-out cross-validation)
+
+		# Original vs Cross-Validated (leave-one-out cross-validation)
 		
 		# classifications from leave-one-out cross-validation
-		classes_CV <- DFA_classes_CV(donnes=donnes, priorprob=priorprob, covmat_type=covmat_type )
+		classes_CV <- DFA_classes_CV(donnes=donnes, priorprob=priorprob, covmat_type=covmat_type, grpnames=grpnames )
 	
-		freqs_CV <- squareTable(var1=donnes[,1], var2=classes_CV, grpnames, tabdimnames=c('Original','Cross-Validated'))
+		freqs_ORIG_CV <- squareTable(var1=donnes[,1], var2=classes_CV, 
+		                             faclevels=grpnames, tabdimnames=c('Original','Cross-Validated'))
+		# freqs_ORIG_CV <- squareTable(var1=classes_PRED$dfa_class, var2=classes_CV, tabdimnames=c('Original','Cross-Validated'))
 	
-		colnames(freqs_CV) <- paste(grpnames)
-		rownames(freqs_CV) <- paste(grpnames)
+		colnames(freqs_ORIG_CV) <- paste(grpnames)
+		rownames(freqs_ORIG_CV) <- paste(grpnames)
+
+		chi_square_ORIG_CV <- summary(freqs_ORIG_CV)
+
+		PressQ_ORIG_CV <- PressQ(freqs_ORIG_CV)
 	
-		PropCrossValCorrect <- sum(diag(freqs_CV)) / sum(freqs_CV)
+		kappas_ORIG_CV <- kappas(donnes[,1], classes_CV, grpnames)
+
+		PropCrossValCorrect <- sum(diag(freqs_ORIG_CV)) / sum(freqs_ORIG_CV)			
 		
-		chi_square_CV <- summary(freqs_CV)
-		PressQ_CV <- PressQ(freqs_CV)
-	
-		rowfreqs_CV <- margin.table(freqs_CV, 1)
-		colfreqs_CV <- margin.table(freqs_CV, 2)
+		# rowfreqs_ORIG_CV <- margin.table(freqs_ORIG_CV, 1)
+		# colfreqs_ORIG_CV <- margin.table(freqs_ORIG_CV, 2)		
+		# cellprops_ORIG_CV <- prop.table(freqs_ORIG_CV)
+		# rowprops_ORIG_CV  <- prop.table(freqs_ORIG_CV, 1)
+		# colprops_ORIG_CV  <- prop.table(freqs_ORIG_CV, 2)
+
 		
-		cellprops_CV <- prop.table(freqs_CV)
-		rowprops_CV  <- prop.table(freqs_CV, 1)
-		colprops_CV  <- prop.table(freqs_CV, 2)
-		
-		# Agreement (kappas) between the Cross-Validated and Original Group Memberships
-		kappas_CVO <- kappas(classes_CV, donnes[,1], grpnames)
-	
-		# Agreement (kappas) between the Cross-Validated and Predicted Group Memberships
-		kappas_CVP <- kappas(classes_CV, classes$dfa_class, grpnames)
+		# Predicted vs Cross-Validated (leave-one-out cross-validation)
+
+
+		# attributes(var2) <- attributes(var1) 
+
+
+# attributes(freqs_ORIG_CV)
+
+
+		# freqs_PRED_CV <- squareTable(var1=classes_PRED$dfa_class, var2=classes_CV, 
+		                             # faclevels=grpnames, tabdimnames=c('Predicted','Cross-Validated'))
+
+		# colnames(freqs_PRED_CV) <- paste(grpnames)
+		# rownames(freqs_PRED_CV) <- paste(grpnames)
+
+		# chi_square_PRED_CV <- summary(freqs_PRED_CV)
+
+		# PressQ_PRED_CV <- PressQ(freqs_PRED_CV)
+
+		# kappas_PRED_CV <- kappas(var1 = classes_PRED$dfa_class, var2 = classes_CV, grpnames)
+
 	}
 
-	DFAoutput$classes <- classes$dfa_class
-	DFAoutput$posteriors <- classes$posteriors 
+	DFAoutput$classes_PRED <- classes_PRED$dfa_class
 	if (CV) DFAoutput$classes_CV <- classes_CV
-	DFAoutput$freqs_OR <- freqs_OR
-	DFAoutput$PropOrigCorrect <- PropOrigCorrect
-	DFAoutput$chi_square_OR <- chi_square_OR
-	DFAoutput$PressQ_OR <- PressQ_OR
-	DFAoutput$rowfreqs_OR <- rowfreqs_OR
-	DFAoutput$colfreqs_OR <- colfreqs_OR
-	DFAoutput$cellprops_OR <- cellprops_OR
-	DFAoutput$rowprops_OR <- rowprops_OR
-	DFAoutput$colprops_OR <- colprops_OR
-	DFAoutput$kappas_cvo_OR <- kappas_cvo_OR
+	DFAoutput$posteriors <- classes_PRED$posteriors 
 	DFAoutput$grp_post_stats <- grp_post_stats
-	DFAoutput$freqs_CV <- freqs_CV
+	DFAoutput$freqs_ORIG_PRED <- freqs_ORIG_PRED
+	DFAoutput$chi_square_ORIG_PRED <- chi_square_ORIG_PRED
+	DFAoutput$PressQ_ORIG_PRED <- PressQ_ORIG_PRED
+	DFAoutput$kappas_ORIG_PRED <- kappas_ORIG_PRED
+	DFAoutput$PropOrigCorrect <- PropOrigCorrect
+
+	# DFAoutput$rowfreqs_ORIG_PRED <- rowfreqs_ORIG_PRED
+	# DFAoutput$colfreqs_ORIG_PRED <- colfreqs_ORIG_PRED
+	# DFAoutput$cellprops_ORIG_PRED <- cellprops_ORIG_PRED
+	# DFAoutput$rowprops_ORIG_PRED <- rowprops_ORIG_PRED
+	# DFAoutput$colprops_ORIG_PRED <- colprops_ORIG_PRED
+
+
+	DFAoutput$freqs_ORIG_CV <- freqs_ORIG_CV
+	DFAoutput$chi_square_ORIG_CV <- chi_square_ORIG_CV
+	DFAoutput$PressQ_ORIG_CV <- PressQ_ORIG_CV
+	DFAoutput$kappas_ORIG_CV <- kappas_ORIG_CV
 	DFAoutput$PropCrossValCorrect <- PropCrossValCorrect
-	DFAoutput$chi_square_CV <- chi_square_CV
-	DFAoutput$PressQ_CV <- PressQ_CV
-	DFAoutput$rowfreqs_CV <- rowfreqs_CV
-	DFAoutput$colfreqs_CV <- colfreqs_CV
-	DFAoutput$cellprops_CV <- cellprops_CV
-	DFAoutput$rowprops_CV <- rowprops_CV
-	DFAoutput$colprops_CV <- colprops_CV
-	DFAoutput$kappas_CVO <- kappas_CVO
-	DFAoutput$kappas_CVP <- kappas_CVP		
+
+	# DFAoutput$rowfreqs_ORIG_CV <- rowfreqs_ORIG_CV
+	# DFAoutput$colfreqs_ORIG_CV <- colfreqs_ORIG_CV
+	# DFAoutput$cellprops_ORIG_CV <- cellprops_ORIG_CV
+	# DFAoutput$rowprops_ORIG_CV <- rowprops_ORIG_CV
+	# DFAoutput$colprops_ORIG_CV <- colprops_ORIG_CV
+
+	# DFAoutput$freqs_PRED_CV <- freqs_PRED_CV
+	# DFAoutput$chi_square_PRED_CV <- chi_square_PRED_CV
+	# DFAoutput$PressQ_PRED_CV <- PressQ_PRED_CV
+	# DFAoutput$kappas_PRED_CV <- kappas_PRED_CV
+	
 }
 
 
@@ -424,14 +512,25 @@ if (predictive == TRUE | is.null(predictive)) {
 # plot
 if (plot == TRUE) {
 
-	colnames(centroidsZ) <-  c(paste("DF ", 1:ncol(centroidSDsZ), sep=""))
-	
-	graphics::matplot(1:length(grpnames), centroidsZ, type = "l", lty=1, lwd=3, 
+	# if (Ndfs == 1) {
+		# centroidsZ_2 <- matrix(centroidsZ, length(centroidsZ), 1)
+		# colnames(centroidsZ_2) <- "DF 1"
+	# }
+	# if (Ndfs > 1) {
+		# centroidsZ_2 <- centroidsZ		
+		# colnames(centroidsZ_2) <-  c(paste("DF ", 1:ncol(centroidsSDsZ), sep=""))		
+	# }
+
+
+	centroidsZ_2 <- centroidsZ		
+	colnames(centroidsZ_2) <-  c(paste("DF ", 1:ncol(centroidsSDsZ), sep=""))		
+
+	graphics::matplot(1:length(grpnames), centroidsZ_2, type = "l", lty=1, lwd=3, 
 	        xaxt='n', xlab=groups, cex.axis=1.2, cex.lab = 1.3,
 	        ylab='Discriminant Function z Scores', ylim = c(-3, 3), cex.axis=1.2        )
-	graphics::axis(side=1, at=grpnums, labels=rownames(centroidsZ), xlab="groups")
+	graphics::axis(side=1, at=grpnums, labels=grpnames, xlab="groups")   # labels=rownames(centroidsZ_2)
 	graphics::title(main='Mean Standardized Discriminant Function Scores for the Groups')
-	graphics::legend("topright", legend = colnames(centroidsZ), bty="n", lwd=2, col=1:ncol(centroidsZ))
+	graphics::legend("topright", legend = colnames(centroidsZ_2), bty="n", lwd=2, col=1:ncol(centroidsZ_2))
 }
 
 
@@ -473,13 +572,13 @@ if (verbose == TRUE) {
 	print(round_boc(centroids), print.gap=4)
 	
 	message('\n\nGroup Standard Deviations on the unstandardized functions:\n')
-	print(round_boc(centroidSDs), print.gap=4)
+	print(round_boc(centroidsSDs), print.gap=4)
 	
 	message('\n\nStandardized canonical discriminant functions evaluated at group means:\n')
 	print(round_boc(centroidsZ), print.gap=4)
 	
 	message('\n\nGroup Standard Deviations on the standardized functions:\n')
-	print(round_boc(centroidSDsZ), print.gap=4)
+	print(round_boc(centroidsSDsZ), print.gap=4)
 	
 	message('\n\nOne-way ANOVAs using the scores on a discriminant function as the DV:\n')
 	print(round_boc(anovaDFoutput), print.gap=4)
@@ -587,39 +686,47 @@ if (verbose == TRUE) {
 	
 		message('\n\nPREDICTIVE DISCRIMINANT ANALYSIS')
 		
-		message('\n\nPrior Probabilities for Groups:\n'); print(round(classes$prior,3), print.gap=4, row.names=FALSE)
+		message('\n\nPrior Probabilities for Groups:\n')
+		print(round(classes_PRED$prior,3), print.gap=4, row.names=FALSE)
 				
-		message('\n\nClassification Function Coefficients:\n'); print(round(classes$classifcoefs,3), print.gap=4, row.names=FALSE)
+		if (covmat_type == 'within') {
+			message('\n\nClassification Function Coefficients:\n')
+			print(round(classes_PRED$classifcoefs,3), print.gap=4, row.names=FALSE)
 
-		message('\n\nClassification Function Intercepts:\n'); print(round(classes$classifints,3), print.gap=4, row.names=FALSE)
+			message('\n\nClassification Function Intercepts:\n')
+			print(round(classes_PRED$classifints,3), print.gap=4, row.names=FALSE)
+		}
 				
-		message('\n\nCross-Tabulation of the Original and Predicted Group Memberships:\n'); print(freqs_OR, print.gap=4)	
+		message('\n\nCross-Tabulation of the Original and Predicted Group Memberships:\n')
+		print(freqs_ORIG_PRED, print.gap=4)	
 		
 		message('\n\nProportion of original grouped cases correctly classified:  ', round(PropOrigCorrect,3))
 		
-		message('\n\nChi-square test of independence:\n'); print(chi_square_OR, print.gap=4) # chi-square test of indepedence
+		message('\n\nChi-square test of independence:\n')
+		print(chi_square_ORIG_PRED, print.gap=4) 
 
-		message('\n\nPress\'s Q significance test of classifiation accuracy:\n')
+		message('\n\nPress\'s Q significance test of classifiation accuracy:')
 		
-		if (PressQ_OR < 3.8415) { 
-			message('\nPress\'s Q =', PressQ_OR, ', which is < 3.8415, indicating non-significance')
-		} else if (PressQ_OR > 6.63501) { 
-			message('\nPress\'s Q =', PressQ_OR, 'which is > 6.63501, indicating p < .01')
-		} else if (PressQ_OR < 6.63501 & PressQ_OR > 3.8415) { 
-			message('\nPress\'s Q =', PressQ_OR, 'which is > 3.8415, indicating p < .05')
+		if (PressQ_ORIG_PRED < 3.8415) { 
+			message('\nPress\'s Q = ', round(PressQ_ORIG_PRED,2), ', which is < 3.8415, indicating non-significance')
+		} else if (PressQ_ORIG_PRED > 6.63501) { 
+			message('\nPress\'s Q = ', round(PressQ_ORIG_PRED,2), ' which is > 6.63501, indicating p < .01')
+		} else if (PressQ_ORIG_PRED < 6.63501 & PressQ_ORIG_PRED > 3.8415) { 
+			message('\nPress\'s Q = ', round(PressQ_ORIG_PRED,2), ' which is > 3.8415, indicating p < .05')
 		}
 				
-		message('\n\nRow Frequencies:\n'); print(rowfreqs_OR, print.gap=4) # A frequencies (summed over B) 
+		# message('\n\nRow Frequencies:\n'); print(rowfreqs_ORIG_PRED, print.gap=4) # A frequencies (summed over B) 
 	
-		message('\n\nColumn Frequencies:\n'); print(colfreqs_OR, print.gap=4) # B frequencies (summed over A)
+		# message('\n\nColumn Frequencies:\n'); print(colfreqs_ORIG_PRED, print.gap=4) # B frequencies (summed over A)
 		
-		message('\n\nCell Proportions:\n'); print(round(cellprops_OR,2), print.gap=4)
+		# message('\n\nCell Proportions:\n'); print(round(cellprops_ORIG_PRED,2), print.gap=4)
 	
-		message('\n\nRow-Based Proportions:\n'); print(round(rowprops_OR,2), print.gap=4) 
+		# message('\n\nRow-Based Proportions:\n'); print(round(rowprops_ORIG_PRED,2), print.gap=4) 
 	
-		message('\n\nColumn-Based Proportions:\n'); print(round(colprops_OR,2), print.gap=4) 
+		# message('\n\nColumn-Based Proportions:\n'); print(round(colprops_ORIG_PRED,2), print.gap=4) 
 		
-		message('\n\nAgreement (kappas) between the Predicted and Original Group Memberships:\n'); print(kappas_cvo_OR,3, print.gap=4)
+		message('\n\nAgreement (kappas) between the Original and Predicted Group Memberships:\n')
+		print(kappas_ORIG_PRED,3, print.gap=4)
 
 		message("\n\nGroup mean posterior classification probabilities: \n"); 
 		print(round(grp_post_stats$grpMNprobs,2), print.gap=4)
@@ -628,41 +735,61 @@ if (verbose == TRUE) {
 		print(grp_post_stats$grp_prob_Ns, print.gap=4)
 			
 		message("\n\nProportions of cases per level of posterior classification probability:\n") 
-		print(grp_post_stats$grp_prob_proports, print.gap=4)		
+		print(round(grp_post_stats$grp_prob_proports,2), print.gap=4)		
 			
 		if (CV) {
 
-			message('\n\nCross-Tabulation of the Cross-Validated and Predicted Group Memberships:\n'); print(freqs_CV, print.gap=4)	
+			message('\n\nCross-Tabulation of the Original and Cross-Validated Group Memberships:\n')
+			print(freqs_ORIG_CV, print.gap=4)	
 			
 			message('\n\nProportion of cross-validated grouped cases correctly classified:  ', round(PropCrossValCorrect,3), print.gap=4)
 			
-			message('\n\nChi-square test of indepedence:\n'); print(chi_square_CV) # chi-square test of indepedence
+			message('\n\nChi-square test of independence:\n')
+			print(chi_square_ORIG_CV)
 			
-			message('\n\nPress\'s Q significance test of classifiation accuracy:\n')
+			message('\n\nPress\'s Q significance test of classifiation accuracy:')
 			
-			if (PressQ_CV < 3.8415) { 
-				message('\nPress\'s Q =', PressQ_CV, ', which is < 3.8415, indicating non-significance')
-			} else if (PressQ_CV > 6.63501) { 
-				message('\nPress\'s Q =', PressQ_CV, 'which is > 6.63501, indicating p < .01')
-			} else if (PressQ_CV < 6.63501 & PressQ_CV > 3.8415) { 
-				message('\nPress\'s Q =', PressQ_CV, 'which is > 3.8415, indicating p < .05')
+			if (PressQ_ORIG_CV < 3.8415) { 
+				message('\nPress\'s Q = ', round(PressQ_ORIG_CV,2), ', which is < 3.8415, indicating non-significance')
+			} else if (PressQ_ORIG_CV > 6.63501) { 
+				message('\nPress\'s Q = ', round(PressQ_ORIG_CV,2), ' which is > 6.63501, indicating p < .01')
+			} else if (PressQ_ORIG_CV < 6.63501 & PressQ_ORIG_CV > 3.8415) { 
+				message('\nPress\'s Q = ', round(PressQ_ORIG_CV,2), ' which is > 3.8415, indicating p < .05')
 			}
 					
-			message('\n\nRow Frequencies:\n'); print(rowfreqs_CV, print.gap=4) # A frequencies (summed over B) 
+			# message('\n\nRow Frequencies:\n'); print(rowfreqs_ORIG_CV, print.gap=4) # A frequencies (summed over B) 
 		
-			message('\n\nColumn Frequencies:\n'); print(colfreqs_CV, print.gap=4) # B frequencies (summed over A)
+			# message('\n\nColumn Frequencies:\n'); print(colfreqs_ORIG_CV, print.gap=4) # B frequencies (summed over A)
 			
-			message('\n\nCell Proportions:\n'); print(round(cellprops_CV,2), print.gap=4)
+			# message('\n\nCell Proportions:\n'); print(round(cellprops_ORIG_CV,2), print.gap=4)
 		
-			message('\n\nRow-Based Proportions:\n'); print(round(rowprops_CV,2), print.gap=4)
+			# message('\n\nRow-Based Proportions:\n'); print(round(rowprops_ORIG_CV,2), print.gap=4)
 			
-			message('\n\nColumn-Based Proportions:\n'); print(round(colprops_CV,2), print.gap=4) 
+			# message('\n\nColumn-Based Proportions:\n'); print(round(colprops_ORIG_CV,2), print.gap=4) 
 			
-			message('\n\nAgreement (kappas) between the Cross-Validated and Original Group Memberships:\n')
-			print(kappas_CVO, print.gap=4)
+			message('\n\nAgreement (kappas) between the Original and Cross-Validated Group Memberships:\n')
+			print(kappas_ORIG_CV, print.gap=4)
+
+
+			# message('\n\nCross-Tabulation of the Predicted and Cross-Validated Group Memberships:\n')
+			# print(freqs_PRED_CV, print.gap=4)	
 			
-			message('\n\nAgreement (kappas) between the Cross-Validated and Predicted Group Memberships:\n')
-			print(kappas_CVP, print.gap=4)
+			# message('\n\nChi-square test of independence:\n')
+			# print(chi_square_ORIG_CV) 
+			
+			# message('\n\nPress\'s Q significance test of classifiation accuracy:')
+			
+			# if (PressQ_PRED_CV < 3.8415) { 
+				# message('\nPress\'s Q = ', round(PressQ_PRED_CV,2), ', which is < 3.8415, indicating non-significance')
+			# } else if (PressQ_PRED_CV > 6.63501) { 
+				# message('\nPress\'s Q = ', round(PressQ_PRED_CV,2), ' which is > 6.63501, indicating p < .01')
+			# } else if (PressQ_PRED_CV < 6.63501 & PressQ_PRED_CV > 3.8415) { 
+				# message('\nPress\'s Q = ', round(PressQ_PRED_CV,2), ' which is > 3.8415, indicating p < .05')
+			# }
+					
+			# message('\n\nAgreement (kappas) between the Predicted and Cross-Validated Group Memberships:\n')
+			# print(kappas_PRED_CV, print.gap=4)
+			
 		}
 				
 		message('\n\n')	

@@ -58,12 +58,12 @@ of variances, with applications to the outer continental shelf bidding data. \em
 \author{Brian P. O'Connor }
 \examples{
 # data from Field et al. (2012)
-HOMOGENEITY(data = data_DFA_Field,
+HOMOGENEITY(data = data_DFA$Field_2012,
             groups = 'Group', variables = c('Actions','Thoughts'))
 
 \donttest{
 # data from Sherry (2006)
-HOMOGENEITY(data = data_DFA_Sherry,
+HOMOGENEITY(data = data_DFA$Sherry_2006,
             groups = 'Group',
             variables = c('Neuroticism','Extroversion','Openness',
                           'Agreeableness','Conscientiousness'))

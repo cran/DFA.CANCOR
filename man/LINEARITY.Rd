@@ -41,19 +41,19 @@ Tabachnik, B. G., & Fidell, L. S. (2019). \emph{Using multivariate statistics (7
 \author{Brian P. O'Connor }
 \examples{
 # data from Sherry (2006), using all variables
-LINEARITY(data=data_DFA_Sherry, groups='Group',
+LINEARITY(data=data_DFA$Sherry_2006, groups='Group',
           variables=c('Neuroticism','Extroversion','Openness',
                       'Agreeableness','Conscientiousness') )
 
 \donttest{
 # data from Sherry (2006), specifying independent variables and a dependent variable
-LINEARITY(data=data_DFA_Sherry, groups='Group',
+LINEARITY(data=data_DFA$Sherry_2006, groups='Group',
           idvs=c('Neuroticism','Extroversion','Openness','Agreeableness'),
           dv=c('Conscientiousness'), 
           verbose=TRUE )
 
 # data that simulate those from De Leo & Wulfert (2013)
-LINEARITY(data=data_CCA_De_Leo,
+LINEARITY(data=data_CANCOR$DeLeo_2013,
           variables=c('Tobacco_Use','Alcohol_Use','Illicit_Drug_Use',
                       'Gambling_Behavior', 'Unprotected_Sex','CIAS_Total', 
                       'Impulsivity','Social_Interaction_Anxiety','Depression',

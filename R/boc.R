@@ -1,21 +1,14 @@
 
 	
 
-# DFAposteriors = data.frame(DFA_Field$posteriors)
 
 
 
-
-DFC_post_class_stats <- function (DFAposteriors, grpnames, verbose=FALSE) {
+DFC_post_class_stats <- function (DFAposteriors, grpnames, Ngroups, groupNs, verbose=FALSE) {
 
 	Group <- NULL # to avoid a "no visible binding for global variable 'Group'" warning
 
 	postvarnoms <- names(DFAposteriors[,-grep("Group",colnames(DFAposteriors))])	
-	Ngroups <- ncol(DFAposteriors) - 1	
-
-	# Group Sizes
-	groupNs <- aggregate(x = DFAposteriors[,postvarnoms[1]], by = list(DFAposteriors$Group), FUN=length)[,2]
-	names(groupNs) <- grpnames
 
 	# # Group mean classification probabilities -- aggregate produces a list that is too long/tiresome to work with
 	# grpMNprobs <- aggregate(x = DFAposteriors[,postvarnoms], by = list(DFAposteriors$Group), FUN=mean)
@@ -43,11 +36,12 @@ DFC_post_class_stats <- function (DFAposteriors, grpnames, verbose=FALSE) {
 	grpMNprobs <- matrix(grpMNprobs, 1, length(grpMNprobs))
 	dimnames(grpMNprobs) <- list(rep("", dim(grpMNprobs)[1])); colnames(grpMNprobs) <- grpnames
 
-	grp_prob_proports <- grp_prob_Ns / groupNs	
+	grp_prob_proports <- mapply('/', data.frame(grp_prob_Ns), groupNs)
+
 
 	# # message("\n\nAverage of the highest classification probabilities: ", 
 	# message("\n\nAverage of the (original) group classification probabilities: ", 
-	    # round(mean(apply( DFAposteriors[,-grep("Group",colnames(DFAposteriors))], 1, max)),2)  )
+	    # round(mean(apply( DFAposteriors[,-grep("Group",colnames(DFAposteriors))], 1, max)),2)  
 		
 	# # the uncertainties of the classifications
 	# uncertanties <- 1 - (apply(DFAposteriors[,-grep("Group",colnames(DFAposteriors))], 1, max))
@@ -57,11 +51,10 @@ DFC_post_class_stats <- function (DFAposteriors, grpnames, verbose=FALSE) {
 	dimnames(grp_prob_Ns) <-list(rep("", dim(grp_prob_Ns)[1]))
 	colnames(grp_prob_Ns) <- c("Classif. prob.", grpnames )
 	
-	# grp_prob_proports <- matrix(-99,ncol(classifprobs),Ngroups)
-	# for (lupe in 1: )  grp_prob_proports[,lupe] <- grp_prob_Ns[,lupe] / groupNs[lupe]  
 	grp_prob_proports <- cbind( t(classifprobs), grp_prob_proports)
 	dimnames(grp_prob_proports) <-list(rep("", dim(grp_prob_proports)[1]))
 	colnames(grp_prob_proports) <- c("Classif. prob.", grpnames )
+
 	
 	if (verbose) {
 		message("\nGroup Sizes: \n"); print(groupNs)
@@ -83,10 +76,6 @@ DFC_post_class_stats <- function (DFAposteriors, grpnames, verbose=FALSE) {
 
 
 
-# DFC_post_class_stats(DFAposteriors, grpnames=grpnames, verbose=TRUE) 
-
-
-
 
 
 
@@ -99,63 +88,182 @@ DFA_classes <- function(donnes, grpmeans, Ngroups, groupNs, grpnames, Ncases, W,
 	# the group prior probabilities
 	if (priorprob == 'EQUAL')  prior <- matrix( (1 / Ngroups), 1, Ngroups)
 	if (priorprob == 'SIZES')  prior <- matrix( (groupNs / Ncases), 1, Ngroups)
-	dimnames(prior) <- list(rep("", dim(prior)[1])); colnames(prior) <- grpnames
+	names(prior) <- grpnames	
+
+
+	if (covmat_type == 'within')  {   
 		
+		# # APPROACH 1 = T & F 2013, p 389 - 391
 
-	if (covmat_type == 'within')  {   # classification -- T & F 2013, p 389 - 391
-
-		# the weights
-		Cj <- t(apply(grpmeans, 1, function(grpmeans, W) { solve(W) %*% grpmeans }, W=W))
-		colnames(Cj) <- colnames(donnes[,2:(Ndvs+1)])
+		# # the weights
+		# Cj_TabFid <- t(apply(grpmeans, 1, function(grpmeans, W) { solve(W) %*% grpmeans }, W=W))
+		# colnames(Cj_TabFid) <- colnames(donnes[,2:(Ndvs+1)])
 	
-		# the constants
-		# T & F 2013 p 389 = -.5 * t(Cj[x,]) %*% grpmeans[x,];   but SPSS = log(prior[x]) -.5 * t(Cj[x,]) %*% grpmeans[x,]
-		Cj0 <- sapply(1:Ngroups, function(x, grpmeans, Cj) { log(prior[x]) -.5 * t(Cj[x,]) %*% grpmeans[x,] }, grpmeans=grpmeans, Cj=Cj)
-		names(Cj0) <- grpnames
+		# # # the intercepts
+		# # # T & F 2013 p 389 = -.5 * t(Cj_TabFid[x,]) %*% grpmeans[x,];   but SPSS = log(prior[x]) -.5 * t(Cj_TabFid[x,]) %*% grpmeans[x,]
+		# # Cj0_TabFid <- sapply(1:Ngroups, function(x, grpmeans, Cj_TabFid) { log(prior[x]) -.5 * t(Cj_TabFid[x,]) %*% grpmeans[x,] }, grpmeans=grpmeans, Cj_TabFid=Cj_TabFid)
+		# # names(Cj0_TabFid) <- grpnames
+
+		# # to get the same intercepts as Rencher:
+		# Cj0_TabFid <- sapply(1:Ngroups, function(x, grpmeans, Cj_TabFid) { -.5 * t(Cj_TabFid[x,]) %*% grpmeans[x,] - 1 }, grpmeans=grpmeans, Cj_TabFid=Cj_TabFid)
+		# names(Cj0_TabFid) <- grpnames
+
+		# # # Cj0_TabFid <- Cj0_Rencher ; 		names(Cj0_TabFid) <- grpnames
 		
-		clsfxnvals <- matrix(NA, Ncases, Ngroups)
-		if (priorprob == 'EQUAL') {
-			for (ng in 1:Ngroups) {
-				clsfxnvals[,ng] <- sapply(1:Ncases, 
-				                          function(x, Cj0, Cj, ng) 
-				                                   { Cj0[ng] + sum(Cj[ng,] * donnes[x,(2:(Ndvs+1))]) }, 
-				                                   Cj0=Cj0, Cj=Cj, ng=ng)
-			}
-		}
-		if (priorprob == 'SIZES') {   #  log(groupNs[ng] / Ncases) is from T & F 2013 p 391
-			for (ng in 1:Ngroups) {
-				clsfxnvals[,ng] <- sapply(1:Ncases, 
-				                          function(x, Cj0, Cj, ng, groupNs) 
-				                          		   { Cj0[ng] + sum(Cj[ng,] * donnes[x,(2:(Ndvs+1))]) + log(prior[ng]) }, 
-				                          		   Cj0=Cj0, Cj=Cj, ng=ng, groupNs=groupNs)
-			}
-		}
+		# # the TabFid intercepts (i.e., computed with log(prior) are = the SPSS intercepts, but not = Rencher's, slight diff), 
+		# # but the classes are NOT the same as the SPSS classes if the TabFid intercepts are used
+		# # the classes are = the SPSS classes & the MASS classes when the Rencher intercepts are used
+		# # my guess: SPSS uses log(prior) to display the intercepts, but not to compute the classes
+
+		# # scores on the classification functions  -- T & F 2013 p 391 (altho they do not use log(prior) for equal grp sizes)
+		# clsfxnvals <- matrix(NA, Ncases, Ngroups)
+		# for (ng in 1:length(grpnames)) { # for each observation get the scores on the group classification functions
+			# for (luper in 1:Ncases) {
+				# clsfxnvals[luper,ng] <- Cj0_TabFid[grpnames[ng]] + sum(Cj_TabFid[grpnames[ng],] * donnes[luper,(2:(Ndvs+1))]) + log(prior[grpnames[ng]])  
+			# }
+		# }
+
+		# dfa_class_TabFid <- c()
+		# for (luper in 1:Ncases)  dfa_class_TabFid[luper] <- grpnames[which.max(clsfxnvals[luper,])]
+
+ 		# dfa_class_TabFid <- factor(dfa_class_TabFid, levels=grpnames)
+			
+
 		
-	dfa_class <- apply(clsfxnvals, 1, which.max)
+		# APPROACH 2 = Linear Discriminant Analysis of Several Groups 
+		# Rencher (2002, p. 304), but R code adpated from 
+		# Schlegel  https://rpubs.com/aaronsc32/lda-classification-several-groups	
+		# Schlegel - Linear Classification Functions for Several Groups.pdf
+			
+		# split the data into groups
+		donnes.groups <- split(donnes[,2:ncol(donnes)], donnes[,1])
+		
+		# get the group mean vectors
+		donnes.grpmeans <- lapply(donnes.groups, function(x) { c(apply(x, 2, mean)) })		
+
+		# get the groups covariance matrices
+		Si <- lapply(donnes.groups, function(x) cov(x))		
+		
+		# pooling the group covariance matrices
+		summat <- matrix(0, Ndvs, Ndvs)
+		for (Ngs in 1:Ngroups) { summat = summat + ( (groupNs[Ngs] - 1) * matrix(unlist(Si[Ngs]), Ndvs, byrow = TRUE) ) }
+		sp1 <- (1 / (Ncases - Ngroups)) * summat  # the pooled covmat
+
+		# ISSUE: SPSS uses Type III sums of squares for the var-covar matrices, Rencher does not 
+		# print(sp1);	print(W)		
+		sp1 <- W  # using Rencher's commands but with the SPSS vcv instead of Rencher's sp1
+
+		sp1_inv <- solve(sp1)
+
+		Li.y <- matrix(-9999, Ncases, Ngroups)
+		dfa_class_Rencher <- c()    #matrix(-9999, Ncases, 1) 
+				
+		for (luper in 1:Ncases) {			  
+			y <- as.numeric(matrix( donnes[luper,2:ncol(donnes)], Ndvs, 1) )			  
+													  
+			for (ng in 1:length(grpnames)) { # for each observation get the scores on the group classification functions
+
+				y.bar <- matrix( unlist(donnes.grpmeans[grpnames[ng]]), Ndvs, 1)
+					
+				Li.y[luper,ng] <- log(prior[grpnames[ng]]) + t(y.bar) %*% sp1_inv %*% (y) - .5 * t(y.bar) %*% sp1_inv %*% (y.bar)
+			}			  
+			dfa_class_Rencher[luper] <- grpnames[which.max(Li.y[luper,])]   # the group number which maximizes the function
+		}
+		dfa_class_Rencher <- factor(dfa_class_Rencher, levels=grpnames)
+
+
+		# Rencher Cj0 & Cj   -- p 305
+		Cj0_Rencher <- c()
+		Cj_Rencher  <- matrix(NA, Ngroups, Ndvs)
+		for (ng in 1:length(grpnames)) { 
+			y.bar <- matrix( unlist(donnes.grpmeans[grpnames[ng]]), Ndvs, 1)
+			Cj0_Rencher[ng] <- -.5 * t(y.bar) %*% sp1_inv %*% (y.bar) - 1	# to get Schleger's intercepts   -1 correct?????					
+			# # add log(prior[grpnames[ng]]) to get the SPSS intercepts
+			# Cj0_Rencher[ng] <- log(prior[grpnames[ng]]) -.5 * t(y.bar) %*% sp1_inv %*% (y.bar)		   					
+			Cj_Rencher[ng,] <-  t(y.bar) %*% sp1_inv 			
+		}			  
+		colnames(Cj_Rencher) <- colnames(donnes[,2:(Ndvs+1)])
+		rownames(Cj_Rencher) <- grpnames
+		names(Cj0_Rencher) <- grpnames
+
+
+
+		# # APPROACH 3 = MASS::lda 
+		# ldaoutput <- MASS::lda(x = as.matrix(donnes[,2:ncol(donnes)]), grouping=donnes[,1], prior = prior) 		
+		# lda.values <- stats::predict(ldaoutput, donnes[,2:ncol(donnes)]) # obtain scores on the DFs
+		# dfa_class_MASS <- lda.values$class
+		# # Cj_MASS  <- 
+		# # Cj0_MASS <- 
+				
+
+		# # comparing TabFid with Rencher   INTERCEPTS
+		# message('\n\ncomparing TabFid with Rencher:\n')
+		# print(Cj0_TabFid)
+		# print(Cj0_Rencher)
+		# print(round((Cj0_TabFid - Cj0_Rencher),3))
+
+		# # comparing TabFid with Rencher   WEIGHTS
+		# message('\n\ncomparing TabFid with Rencher:\n')
+		# print(Cj_TabFid)
+		# print(Cj_Rencher)
+		# print(round((Cj_TabFid - Cj_Rencher),3))
+
+
+		# # comparing ORIG with TabFid
+		# message('\ncomparing ORIG with TabFid:\n')
+		# print(squareTable(donnes[,1], dfa_class_TabFid, faclevels=grpnames, tabdimnames=c('variable 1','variable 2')))
+
+		# # comparing ORIG with Rencher
+		# message('\ncomparing ORIG with Rencher:\n')
+		# print(squareTable(donnes[,1], dfa_class_Rencher, faclevels=grpnames, tabdimnames=c('variable 1','variable 2')))
+
+		# # comparing ORIG with MASS
+		# message('\ncomparing ORIG with MASS:\n')
+		# print(squareTable(donnes[,1], dfa_class_MASS, faclevels=grpnames, tabdimnames=c('variable 1','variable 2')))
+
+
+		# # comparing TabFid with Rencher
+		# message('\ncomparing TabFid with Rencher:\n')
+		# print(squareTable(dfa_class_TabFid, dfa_class_Rencher, faclevels=grpnames, tabdimnames=c('variable 1','variable 2')))
+
+		# # comparing TabFid with MASS::lda
+		# message('\ncomparing TabFid with MASS::lda:\n')
+		# print(squareTable(dfa_class_TabFid, dfa_class_MASS, faclevels=grpnames, tabdimnames=c('variable 1','variable 2')))
+
+		# # comparing Rencher with MASS::lda
+		# message('\ncomparing Rencher with MASS::lda:\n')
+		# print(squareTable(dfa_class_Rencher, dfa_class_MASS, faclevels=grpnames, tabdimnames=c('variable 1','variable 2')))
+
 
 	
-	# posterior probabilities -- adapted from 
-	# 2019 Boedeker - LDA for Prediction of Group Membership - A User-Friendly Primer - Appendix A
-	# the code below produces the same posteriors values as MASS::lda
-	detW <- det(W)   # determinant of the pooled variance-covariance matrix
-	invW <- solve(W)		
-	fs_formula_pt1 <- (1/(((2*pi)^(Ndvs/2))*(detW^.5)))
-	posteriors <- c()
-	for (luper in 1:Ncases) {
-		fs <- c()
-		for (lupeg in 1:Ngroups) {
-			fs   <- append(fs, fs_formula_pt1 * 
-			                   exp(-.5*(t(t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) 
-			                   %*% invW %*% (t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) )	
+		# posterior probabilities -- adapted from 
+		# 2019 Boedeker - LDA for Prediction of Group Membership - A User-Friendly Primer - Appendix A
+		# the code below produces the same posteriors values as MASS::lda
+		detW <- det(W)   # determinant of the pooled variance-covariance matrix
+		invW <- solve(W)		
+		fs_formula_pt1 <- (1/(((2*pi)^(Ndvs/2))*(detW^.5)))
+		posteriors <- c()
+		for (luper in 1:Ncases) {
+			fs <- c()
+			for (lupeg in 1:Ngroups) {
+				fs   <- append(fs, fs_formula_pt1 * 
+				                   exp(-.5*(t(t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) 
+				                   %*% invW %*% (t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) )	
+			}
+			posteriors <- rbind(posteriors, ((fs * prior) / sum(fs * prior)) )
 		}
-		posteriors <- rbind(posteriors, ((fs * prior) / sum(fs * prior)) )
-	}
-	colnames(posteriors) <- paste("posterior_", grpnames, sep="")
-	posteriors <- as.data.frame(posteriors)
-	posteriors$Group <- donnes[,1]
-	rownames(posteriors) <- 1:Ncases
+		colnames(posteriors) <- paste("posterior_", grpnames, sep="")
+		posteriors <- as.data.frame(posteriors)
+		posteriors$Group <- donnes[,1]
+		rownames(posteriors) <- 1:Ncases
+	
 
-	DFAclass_output <- list(dfa_class=dfa_class, prior=prior, classifcoefs=t(Cj), classifints=Cj0, posteriors=posteriors) 
+		# producing a version of prior that does not display attr separately
+		prior.print <- data.frame(prior)
+		dimnames(prior.print)[[1]] <- '';  colnames(prior.print) <- grpnames	
+		
+		DFAclass_output <- list(dfa_class=dfa_class_Rencher, prior=prior.print, 
+		                        classifcoefs=t(Cj_Rencher), classifints=Cj0_Rencher, posteriors=posteriors) 
 	}
 
 
@@ -165,60 +273,85 @@ DFA_classes <- function(donnes, grpmeans, Ngroups, groupNs, grpnames, Ncases, W,
 		# SPSS has a separate-groups covariance matrices option, but it uses group cov matrices based on the DFs - not great
 		# the MASS package has a qda function (which my code replicates) -- prob = no clear way to get/display the classif function coeffs
 		
-		# Cj <- matrix(-9999, Ngroups, Ndvs)
-		# for (lupeg in 1:Ngroups) {
-			# dum <- subset(donnes, donnes[,1] == grpnames[lupeg] )		
-			# Wgrp <- stats::cov(dum[,2:ncol(dum)]); print(Wgrp)			
-			# Cj[lupeg,] <- solve(Wgrp) %*% grpmeans[lupeg,]						
-		# }
-
 		# Quadratic Discriminant Analysis of Several Groups 
 		# Rencher (2002, p. 306), but R code adpated from Schlegel  https://rpubs.com/aaronsc32/qda-several-groups		
 		# split the data into groups & get the groups covariance matrices and group mean vectors
 		donnes.groups <- split(donnes[,2:ncol(donnes)], donnes[,1])
 		Si <- lapply(donnes.groups, function(x) cov(x))		
 		donnes.grpmeans <- lapply(donnes.groups, function(x) { c(apply(x, 2, mean)) })		
-		dfa_class <- c() 
+		
+		# # Rencher Cj0 & Cj   -- p 305
+		# Cj0_Rencher <- c()
+		# Cj_Rencher  <- matrix(NA, Ngroups, Ndvs)
+	
+		dfa_class_Rencher <- c()     
+
 		for (luper in 1:Ncases) {			  
 			y <- donnes[luper,2:ncol(donnes)] 			  
 			l2i <- c()		  
 			for (j in 1:Ngroups) { # For each group, calculate the QDA function 
 				y.bar <- unlist(donnes.grpmeans[j])
 				Si.j <- matrix(unlist(Si[j]), Ndvs, byrow = TRUE)
-				l2i <- append(l2i, -.5 * log(det(Si.j)) - .5 * as.numeric(y - y.bar) %*% solve(Si.j) %*% as.numeric(y - y.bar) + log(prior[j]))
+				Si.j_inv <- solve(Si.j)
+				l2i <- append(l2i, -.5 * log(det(Si.j)) - .5 * as.numeric(y - y.bar) %*% Si.j_inv %*% as.numeric(y - y.bar) + log(prior[grpnames[j]]) ) 
+
+				# Cj0_Rencher[j] <- -.5 * t(y.bar) %*% Si.j_inv %*% (y.bar)		               - 1	#  -1 correct?????					
+				# Cj_Rencher[j,] <-  t(y.bar) %*% Si.j_inv 			
 			}			  
-			dfa_class <- append(dfa_class, which.max(l2i))   # the group number which maximizes the function
+			dfa_class_Rencher <- append(dfa_class_Rencher, grpnames[which.max(l2i)])   # the group which maximizes the function
 		}
 
+		# colnames(Cj_Rencher) <- colnames(donnes[,2:(Ndvs+1)])
+		# rownames(Cj_Rencher) <- grpnames
+		# names(Cj0_Rencher) <- grpnames
 
-	# posterior probabilities -- adapted from 
-	# 2019 Boedeker - LDA for Prediction of Group Membership - A User-Friendly Primer - Appendix A
-	# the code below produces the same posteriors values as MASS::qda
-	detWgrp <- c()
-	invWgrp <- replicate(Ngroups, matrix(NA, Ndvs, Ndvs), simplify = F)
-	for (lupeg in 1:Ngroups) {
-		dum <- subset(donnes, donnes[,1] == grpnames[lupeg] )		
-		Wgrp <- stats::cov(dum[,2:ncol(dum)])
-		invWgrp[[lupeg]] <- solve(Wgrp)
-		detWgrp <- append(detWgrp, det(Wgrp))   
-	}			
-	posteriors <- c()
-	for (luper in 1:Ncases) {
-		fs <- c()
+		dfa_class_Rencher <- factor(dfa_class_Rencher, levels=grpnames)
+
+
+		# # comparing with MASS::qda
+		# # library(MASS)
+		# qda_MASS <- qda(x = as.matrix(donnes[,2:ncol(donnes)]), grouping=donnes[,1], prior=prior, CV=FALSE)
+		# dfa_class_MASS <- predict(qda_MASS)$class 
+		# # print(table(dfa_class_Rencher, dfa_class_MASS))
+		# # 1 - sum(dfa_class_Rencher == dfa_class_MASS) / Ncases   # error rate
+ 		# message('\ncomparing Rencher with MASS::qda:\n')
+		# print(squareTable(dfa_class_Rencher, dfa_class_MASS, faclevels=grpnames, tabdimnames=c('variable 1','variable 2')))
+
+
+
+		# posterior probabilities -- adapted from 
+		# 2019 Boedeker - LDA for Prediction of Group Membership - A User-Friendly Primer - Appendix A
+		# the code below produces the same posteriors values as MASS::qda
+		detWgrp <- c()
+		invWgrp <- replicate(Ngroups, matrix(NA, Ndvs, Ndvs), simplify = F)
 		for (lupeg in 1:Ngroups) {
-			fs   <- append(fs, (1/(((2*pi)^(Ndvs/2))*(detWgrp[lupeg]^.5))) * 
-			                   exp(-.5*(t(t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) 
-			                   %*% invWgrp[[lupeg]] %*% (t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) )	
+			dum <- subset(donnes, donnes[,1] == grpnames[lupeg] )		
+			Wgrp <- stats::cov(dum[,2:ncol(dum)])
+			invWgrp[[lupeg]] <- solve(Wgrp)
+			detWgrp <- append(detWgrp, det(Wgrp))   
+		}			
+		posteriors <- c()
+		for (luper in 1:Ncases) {
+			fs <- c()
+			for (lupeg in 1:Ngroups) {
+				fs   <- append(fs, (1/(((2*pi)^(Ndvs/2))*(detWgrp[lupeg]^.5))) * 
+				                   exp(-.5*(t(t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) 
+				                   %*% invWgrp[[lupeg]] %*% (t(donnes[luper,2:ncol(donnes)]) - grpmeans[lupeg,])) )	
+			}
+			posteriors <- rbind(posteriors,  ((fs * prior) / sum(fs * prior)) )
 		}
-		# posteriors <- rbind(posteriors,  ((fs * prior) / sum(fs * prior)) )
-		posteriors <- rbind(posteriors,  ((fs * prior) / sum(fs * prior)) )
-	}
-	colnames(posteriors) <- paste("posterior_", grpnames, sep="")
-	posteriors <- as.data.frame(posteriors)
-	posteriors$Group <- donnes[,1]
-	rownames(posteriors) <- 1:Ncases
-				
-	DFAclass_output <- list(dfa_class=dfa_class, prior=prior, classifcoefs=NA, classifints=NA, posteriors=posteriors) 
+		colnames(posteriors) <- paste("posterior_", grpnames, sep="")
+		posteriors <- as.data.frame(posteriors)
+		posteriors$Group <- donnes[,1]
+		rownames(posteriors) <- 1:Ncases
+
+
+		# producing a version of prior that does not display attr separately
+		prior.print <- data.frame(prior)
+		dimnames(prior.print)[[1]] <- '';  colnames(prior.print) <- grpnames	
+		
+		DFAclass_output <- list(dfa_class=dfa_class_Rencher, prior=prior.print, 
+		                        classifcoefs=NULL, classifints=NULL, posteriors=posteriors)
 	}
 
 	return(invisible(DFAclass_output))
@@ -233,9 +366,7 @@ DFA_classes <- function(donnes, grpmeans, Ngroups, groupNs, grpnames, Ncases, W,
 
 
 
-
-
-DFA_classes_CV <- function(donnes, priorprob='SIZES', covmat_type) {
+DFA_classes_CV <- function(donnes, priorprob='SIZES', covmat_type, grpnames) {
 
 	# Cross-Validation of Predicted Groups
 	# In cases with small sample sizes, prediction error rates can tend to 
@@ -252,14 +383,15 @@ DFA_classes_CV <- function(donnes, priorprob='SIZES', covmat_type) {
 	# The procedure is repeated for each observation so that each is classified by a 
 	# function of the other observations.
 
-	Ncasesm1 <- nrow(donnes) - 1
+	Ncases <- nrow(donnes)
+	Ncasesm1 <- Ncases - 1
 	Ndvs <- ncol(donnes) - 1
 	Ngroups  <- length(unique(donnes[,1]))
-
 		
 	if (covmat_type == 'within')  {   # classification -- T & F 2013, p 389 - 391
 
-		dfa_class_CV <- c()
+		clsfxnvals <- matrix(NA, Ncases, Ngroups)
+
 		for (luper in 1:nrow(donnes)) {
 			
 			donnesm1 <- donnes[-luper,]
@@ -270,33 +402,41 @@ DFA_classes_CV <- function(donnes, priorprob='SIZES', covmat_type) {
 			
 			# classification -- T & F 2013, p 389 - 391
 	
-			grpmeans <- sapply(2:ncol(donnesm1), function(x) tapply(donnesm1[,x], INDEX = donnesm1[,1], FUN = mean))
+			grpmeans_CV <- sapply(2:ncol(donnesm1), function(x) tapply(donnesm1[,x], INDEX = donnesm1[,1], FUN = mean))
 	
-			groupNs <- as.matrix(table(donnesm1[,1]))
+			groupNs_CV <- as.matrix(table(donnesm1[,1]))
 						
 			# the weights
-			Cj <- t(apply(grpmeans, 1, function(grpmeans, W) { solve(W) %*% grpmeans }, W=W))
+			Cj <- t(apply(grpmeans_CV, 1, function(grpmeans_CV, W) { solve(W) %*% grpmeans_CV }, W=W))
+			colnames(Cj) <- colnames(donnes[,2:(Ndvs+1)])
 		
 			# the constants
-			Cj0 <- sapply(1:Ngroups, function(x, grpmeans, Cj) { -.5 * t(Cj[x,]) %*% grpmeans[x,] }, grpmeans=grpmeans, Cj=Cj)
-		
-			clsfxnvals <- matrix(NA, 1, Ngroups)
+			Cj0 <- sapply(1:Ngroups, function(x, grpmeans_CV, Cj) { -.5 * t(Cj[x,]) %*% grpmeans_CV[x,] }, grpmeans_CV=grpmeans_CV, Cj=Cj)
+			names(Cj0) <- grpnames
+
 			if (priorprob == 'EQUAL') {
-				for (ng in 1:Ngroups) clsfxnvals[,ng] <- Cj0[ng] + sum(Cj[ng,] * donnes[luper,(2:(Ndvs+1))])
+				for (ng in 1:Ngroups) clsfxnvals[luper,ng] <- Cj0[grpnames[ng]] + sum(Cj[grpnames[ng],] * donnes[luper,(2:(Ndvs+1))])
 			}
 			if (priorprob == 'SIZES') {  
+				prior <- matrix( (groupNs_CV / Ncasesm1), 1, Ngroups)
+				names(prior) <- grpnames	
 				for (ng in 1:Ngroups) 
-					 clsfxnvals[,ng] <- Cj0[ng] + sum(Cj[ng,] * donnes[luper,(2:(Ndvs+1))]) + log(groupNs[ng] / Ncasesm1) 
+					 clsfxnvals[luper,ng] <- Cj0[grpnames[ng]] + sum(Cj[grpnames[ng],] * donnes[luper,(2:(Ndvs+1))]) + log(prior[grpnames[ng]]) 
 			}
-			
-			dfa_class_CV <- append(dfa_class_CV, apply(clsfxnvals, 1, which.max) )
-		}
+		}				
+
+		dfa_class_TabFid_CV <- c()
+		for (luper in 1:Ncases)  dfa_class_TabFid_CV[luper] <- grpnames[which.max(clsfxnvals[luper,])]
+
+ 		dfa_class_TabFid_CV <- factor(dfa_class_TabFid_CV, levels=grpnames) 	
+
+		dfa_class_CV <- dfa_class_TabFid_CV
 	}
 
 
 	if (covmat_type == 'separate') {
 
-		dfa_class_CV <- c()
+		dfa_class_Rencher_CV <- c()
 		for (luper in 1:nrow(donnes)) {
 			
 			donnesm1 <- donnes[-luper,]
@@ -305,44 +445,52 @@ DFA_classes_CV <- function(donnes, priorprob='SIZES', covmat_type) {
 			# SPSS has a separate-groups covariance matrices option, but it uses group cov matrices based on the DFs - not great
 			# the MASS package has a qda function (which my code replicates) -- prob = no clear way to get/display the classif function coeffs
 			
-			# Cj <- matrix(-9999, Ngroups, Ndvs)
-			# for (lupeg in 1:Ngroups) {
-				# dum <- subset(donnes, donnes[,1] == grpnames[lupeg] )		
-				# Wgrp <- stats::cov(dum[,2:ncol(dum)]); print(Wgrp)			
-				# Cj[lupeg,] <- solve(Wgrp) %*% grpmeans[lupeg,]						
-			# }
-	
 			# Quadratic Discriminant Analysis of Several Groups 
 			# Rencher (2002, p. 306), but R code adpated from Schlegel  https://rpubs.com/aaronsc32/qda-several-groups
 			
 			# split the data into groups & get the groups covariance matrices and group mean vectors
 			donnesm1.groups <- split(donnesm1[,2:ncol(donnesm1)], donnesm1[,1])
 			Si <- lapply(donnesm1.groups, function(x) cov(x))		
-			donnesm1.grpmeans <- lapply(donnesm1.groups, function(x) { c(apply(x, 2, mean)) })
-			groupNs <- as.matrix(table(donnesm1[,1]))
+			donnesm1.grpmeans_CV <- lapply(donnesm1.groups, function(x) { c(apply(x, 2, mean)) })
+			groupNs_CV <- as.matrix(table(donnesm1[,1]))
 			
 			# the group prior probabilities
 			if (priorprob == 'EQUAL')  prior <- matrix( (1 / Ngroups), 1, Ngroups)
-			if (priorprob == 'SIZES')  prior <- matrix( (groupNs / Ncasesm1), 1, Ngroups)
-			# dimnames(prior) <- list(rep("", dim(prior)[1])); colnames(prior) <- grpnames
+			if (priorprob == 'SIZES')  prior <- matrix( (groupNs_CV / Ncasesm1), 1, Ngroups)
+			names(prior) <- grpnames	
 		
 				y <- donnes[luper,2:ncol(donnesm1)] 
 				  
 				l2i <- c()		  
 				for (j in 1:Ngroups) { # For each group, calculate the QDA function 
-					y.bar <- unlist(donnesm1.grpmeans[j])
+					y.bar <- unlist(donnesm1.grpmeans_CV[j])
 					Si.j <- matrix(unlist(Si[j]), Ndvs, byrow = TRUE)
-					# l2i <- append(l2i, -.5 * log(det(Si.j)) - .5 * as.numeric(y - y.bar) %*% solve(Si.j) %*% as.numeric(y - y.bar) + log(1/length(Si)))
-					l2i <- append(l2i, -.5 * log(det(Si.j)) - .5 * as.numeric(y - y.bar) %*% solve(Si.j) %*% as.numeric(y - y.bar) + log(prior[j]))
+					Si.j_inv <- solve(Si.j)
+					l2i <- append(l2i, -.5 * log(det(Si.j)) - .5 * as.numeric(y - y.bar) %*% Si.j_inv %*% as.numeric(y - y.bar) + log(prior[grpnames[j]]) )
 				}
 				  
-				dfa_class_CV <- append(dfa_class_CV, which.max(l2i))   # the group number which maximizes the function
+				dfa_class_Rencher_CV <- append(dfa_class_Rencher_CV, grpnames[which.max(l2i)])   # the group which maximizes the function
 		}
+		dfa_class_Rencher_CV <- factor(dfa_class_Rencher_CV, levels=grpnames)
+
+
+		# # comparing with MASS::qda
+		# # library(MASS)
+		# dfa_class_MASS_CV <- qda(x = as.matrix(donnes[,2:ncol(donnes)]), grouping=donnes[,1], prior=prior, CV=TRUE)$class
+		# # print(table(dfa_class_Rencher_CV, dfa_class_MASS_CV))
+		# # 1 - sum(dfa_class_Rencher_CV == dfa_class_MASS_CV) / Ncases   # error rate
+ 		# message('\nCV: comparing Rencher with MASS::qda:\n')
+		# print(squareTable(dfa_class_Rencher_CV, dfa_class_MASS_CV, faclevels=grpnames, tabdimnames=c('variable 1','variable 2')))
+
+
+		dfa_class_CV <- dfa_class_Rencher_CV
 	}
 	
 return(invisible(dfa_class_CV))
 }		
 		
+
+
 
 
 
@@ -483,11 +631,73 @@ return(invisible(umvnoutput))
 
 
 
-squareTable <- function(var1, var2, grpnames, tabdimnames=c('variable 1','variable 2')) {
-    var1fact <- factor(var1, labels = grpnames)
-    var2fact <- factor(var2, labels = grpnames)
-    table(var1fact, var2fact, dnn=tabdimnames)
+
+
+squareTable <- function(var1, var2, faclevels=NULL, tabdimnames=c('variable 1','variable 2')) {
+
+	# # # my original commands
+	# # # prob = non-square contin table when the # of factor levels are not the same for var1 and var2
+    # var1fact <- factor(var1, labels = grpnames)
+    # var2fact <- factor(var2, labels = grpnames)
+    # table(var1fact, var2fact, dnn=tabdimnames)
+
+	# length(levels(var1fact)) == length(levels(var2fact))
+	# var2fact <- factor(var2)  # var1 is already a factor, but var2 isn't
+
+
+
+	if (!is.factor(var1)) { var1fact <- factor(var1, levels=faclevels) } else { var1fact <- var1; levels(var1fact) <- faclevels }
+           
+    var2fact <- factor(var2, levels=levels(var1fact) )   #, labels = sort(levels1[unique(var1)]) )
+     
+    contintab <- table(var1fact, var2fact, dnn=tabdimnames)
+
+
+# # 	length(levels(var1fact)) == length(levels(var2fact))
+	# var2fact <- factor(var2)  # var1 is already a factor, but var2 isn't
+
+
+   # var2fact <- var2
+        
+		# attributes(var2fact) <- attributes(var1fact) 
+
+
+
+
+	# if (is.factor(var1)) {    # var1 <- as.integer(var1)
+	
+		# levels1 <- levels(var1)
+		
+# #		var2 <- factor(var2, labels = sort(levels1[unique(var2)]) )
+
+		# # R provides a simple and transparent way to apply one object's attributes to another object. 
+		# # For factors, the attributes include the factor levels/labels.
+		# # https://stackoverflow.com/questions/27453416/r-apply-one-factors-levels-to-another-object
+		# attributes(var2) <- attributes(var1) 
+
+		# contintab <- as.table(matrix(0, length(levels(var1)), length(levels(var1))))
+		
+		# rownames(contintab) <- colnames(contintab) <- levels(var1)
+
+	# } else {
+
+		# contintab <- as.table(matrix(0, length(unique(var1)), length(unique(var1))))
+		
+		# rownames(contintab) <- colnames(contintab) <- unique(var1)		
+	# }
+		
+    
+	# for (lupe in 1:length(var1)) {		
+		# contintab[which(rownames(contintab) == var1[lupe]),  which(rownames(contintab) == var2[lupe])   ] =
+		# contintab[which(rownames(contintab) == var1[lupe]),  which(rownames(contintab) == var2[lupe])   ] + 1
+	# }
+
+	# names(dimnames(contintab)) <- tabdimnames
+
+    return(invisible(contintab))
 }
+
+
 
 
 
@@ -499,7 +709,7 @@ kappa.cohen <- function (var1, var2, grpnames) {
 	# the data for this function (kapdon) are the category values for each of 2 columns,
 	# but the analyses are performed on the contingency table	
 
-	kapdonCT <- squareTable(var1, var2, grpnames); kapdonCT
+	kapdonCT <- squareTable(var1, var2, faclevels=grpnames); kapdonCT
 
 	# based on Valiquette 1994 BRM, Table 1
 	n <- sum(kapdonCT)  # Sum of Matrix elements
