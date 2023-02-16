@@ -45,6 +45,9 @@
 	option in SPSS involves use of the group scores on the discriminant functions (not the original continuous variables), 
 	which can produce different classifications.
 	
+	When data has many cases (e.g., > 1000), the leave-one-out cross-validation analyses can
+	be time-consuming to run. Set CV = FALSE to bypass the predictive DFA cross-validation analyses.
+	
 	See the documentation below for the GROUP.DIFFS function for information on the interpretation of the
 	Bayes factors and effect sizes that are produced for the group comparisons.
 }

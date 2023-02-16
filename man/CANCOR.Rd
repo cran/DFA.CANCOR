@@ -52,6 +52,8 @@
    \item{CorrelSet1}{Pearson correlations for Set 1}
   \item{CorrelSet2}{Pearson correlations for Set 2}
   \item{CorrelSet1n2}{Pearson correlations between Set 1 & Set 2}
+  \item{set1_scores}{Canonical variate scores for Set 1}
+  \item{set2_scores}{Canonical variate scores for Set 2}
 }
 \references{
 	   {Manly, B. F. J., & Alberto, J. A. (2017). \emph{Multivariate statistical methods: 
@@ -106,16 +108,12 @@ CANCOR(data = data_CANCOR$TabFid_2019_complete,
        set2 = c("timedrs","attdrug","phyheal","menheal","druguse"),
        plot = TRUE, plotCV = 1, plotcoefs='structure',
        verbose = TRUE)
-       
+
 
 # UCLA dataset   https://stats.oarc.ucla.edu/r/dae/canonical-correlation-analysis/
-UCLA_CCA_data <- read.csv("https://stats.idre.ucla.edu/stat/data/mmreg.csv")
-colnames(UCLA_CCA_data) <- c("LocusControl", "SelfConcept", "Motivation",
-                             "read", "write", "math", "science", "female")
-summary(UCLA_CCA_data)
-CANCOR(data = UCLA_CCA_data, 
-       set1 = c("LocusControl","SelfConcept","Motivation"),
-       set2 = c("read","write","math","science","female"),
+CANCOR(data = data_CANCOR$UCLA, 
+       set1 = c("Locus_Control","Self_Concept","Motivation"),
+       set2 = c("Read","Write","Math","Science","Sex"),
        plot = TRUE, plotCV = 1, plotcoefs='standardized',
        verbose = TRUE)
 }

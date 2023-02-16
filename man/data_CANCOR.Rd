@@ -9,7 +9,8 @@
 \details{
 A list with the example data that were used in the following presentations 
 of canonical correlation analysis: De Leo and Wulfert (2013), Ho (2014), 
-Rencher (2002), and Tabachnick and Fidell (2019).
+Rencher (2002), Tabachnick and Fidell (2019), and by the UCLA statistics tutorial 
+at https://stats.oarc.ucla.edu/r/dae/canonical-correlation-analysis/.
 }
 
 \references{

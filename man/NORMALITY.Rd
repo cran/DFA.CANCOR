@@ -62,7 +62,7 @@ colnames(UCLA_CCA_data) <- c("LocusControl", "SelfConcept", "Motivation",
                              "read", "write", "math", "science", "female")
 summary(UCLA_CCA_data)
 NORMALITY(data = na.omit(UCLA_CCA_data[c("LocusControl","SelfConcept","Motivation",
-                                         "read","write","math","science","female")]))
+                                         "read","write","math","science")]))
 }
 
 }

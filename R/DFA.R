@@ -139,7 +139,7 @@ dfa_scores <- data.frame(donnes[,1], dfa_scores); colnames(dfa_scores)[1] <- 'gr
 # eigenvalues, canonical correlations, & one-way anovas on the DFs
 evals <- matrix(-9999, Ndfs, 4)
 evals[,1] <- 1:Ndfs
-anovaDFoutput <- matrix(-9999, Ndfs, 7)
+anovaDFoutput <- matrix(-9999, Ndfs, 8)
 ttestDFoutput <- lapply(1:Ndfs, function(x) matrix(-9999, nrow=choose(Ngroups,2), ncol=13))
 names(ttestDFoutput) = c(paste("Discriminant Function ", 1:Ndfs, sep=""))
 for (luper in 1:Ndfs) {
@@ -149,15 +149,16 @@ for (luper in 1:Ndfs) {
 	betwss <- stats::anova(fit)["as.factor(grp)", "Sum Sq"]
 	withss <- stats::anova(fit)["Residuals", "Sum Sq"]
  	anovaDFoutput[luper,1] <- as.numeric(summary(fit)["r.squared"])
-	anovaDFoutput[luper,2] <- stats::anova(fit)["as.factor(grp)","F value"]
-	anovaDFoutput[luper,3] <- stats::anova(fit)["as.factor(grp)","Df"]
-	anovaDFoutput[luper,4] <- fit$df.residual
-	anovaDFoutput[luper,5] <- stats::anova(fit)["as.factor(grp)","Pr(>F)"]
+ 	anovaDFoutput[luper,2] <- 1 - as.numeric(summary(fit)["r.squared"])
+	anovaDFoutput[luper,3] <- stats::anova(fit)["as.factor(grp)","F value"]
+	anovaDFoutput[luper,4] <- stats::anova(fit)["as.factor(grp)","Df"]
+	anovaDFoutput[luper,5] <- fit$df.residual
+	anovaDFoutput[luper,6] <- stats::anova(fit)["as.factor(grp)","Pr(>F)"]
 
 	anBF <- suppressMessages(anovaBF(dv ~ grp, data = dd, progress=FALSE))
-	anovaDFoutput[luper,6] <- as.numeric(suppressMessages(extractBF(anBF)[1]))
+	anovaDFoutput[luper,7] <- as.numeric(suppressMessages(extractBF(anBF)[1]))
 
-	anovaDFoutput[luper,7] <- 1 / as.numeric(suppressMessages(extractBF(anBF)[1]))
+	anovaDFoutput[luper,8] <- 1 / as.numeric(suppressMessages(extractBF(anBF)[1]))
 
 	ttestDFoutput[[luper]] <- GROUP.DIFFS(dd, var.equal=FALSE, verbose=FALSE)			
 
@@ -259,14 +260,14 @@ if (Ndfs == 1) {
 
 # one-way ANOVAs using the scores on a discriminant function as the DV
 dimnames(anovaDFoutput) <-list(rep("", dim(anovaDFoutput)[1]))
-colnames(anovaDFoutput) <- c('Eta-squared','F','df','df','p','Bayes_Factor_alt_vs_null','Bayes_Factor_null_vs_alt')
+colnames(anovaDFoutput) <- c('Eta-squared','Wilks_Lambda','F','df','df_res','p','Bayes_Factor_alt_vs_null','Bayes_Factor_null_vs_alt')
 rownames(anovaDFoutput) <- colnames(coefs_raw)
-anovaDFoutput[,1:4] <- anovaDFoutput[,1:4]
-anovaDFoutput[,5] <- anovaDFoutput[,5]
+# anovaDFoutput[,1:4] <- anovaDFoutput[,1:4]
+# anovaDFoutput[,5] <- anovaDFoutput[,5]
 
 
 # one-way anovas & t-tests on the DVs
-anovaDVoutput <- matrix(-9999, length(variables), 7)
+anovaDVoutput <- matrix(-9999, length(variables), 8)
 ttestDVoutput <- lapply(1:length(variables), function(x) matrix(-9999, nrow=choose(Ngroups,2), ncol=13))
 names(ttestDVoutput)=variables 
 for (lupec in 1:length(variables)) {
@@ -276,23 +277,24 @@ for (lupec in 1:length(variables)) {
 	betwss <- stats::anova(fit)["as.factor(grp)", "Sum Sq"]
 	withss <- stats::anova(fit)["Residuals", "Sum Sq"]
  	anovaDVoutput[lupec,1] <- as.numeric(summary(fit)["r.squared"])
-	anovaDVoutput[lupec,2] <- stats::anova(fit)["as.factor(grp)","F value"]
-	anovaDVoutput[lupec,3] <- stats::anova(fit)["as.factor(grp)","Df"]
-	anovaDVoutput[lupec,4] <- fit$df.residual
-	anovaDVoutput[lupec,5] <- stats::anova(fit)["as.factor(grp)","Pr(>F)"]
+ 	anovaDVoutput[lupec,2] <- 1 - as.numeric(summary(fit)["r.squared"])
+	anovaDVoutput[lupec,3] <- stats::anova(fit)["as.factor(grp)","F value"]
+	anovaDVoutput[lupec,4] <- stats::anova(fit)["as.factor(grp)","Df"]
+	anovaDVoutput[lupec,5] <- fit$df.residual
+	anovaDVoutput[lupec,6] <- stats::anova(fit)["as.factor(grp)","Pr(>F)"]
 
 	anBF <- suppressMessages(anovaBF(dv ~ grp, data = ddd, progress=FALSE))
-	anovaDVoutput[lupec,6] <- as.numeric(extractBF(anBF)[1])
+	anovaDVoutput[lupec,7] <- as.numeric(extractBF(anBF)[1])
 
-	anovaDVoutput[lupec,7] <- 1 / as.numeric(extractBF(anBF)[1])
+	anovaDVoutput[lupec,8] <- 1 / as.numeric(extractBF(anBF)[1])
 	
 	ttestDVoutput[[lupec]] <- GROUP.DIFFS(ddd, var.equal=FALSE, verbose=FALSE)			
 }
 dimnames(anovaDVoutput) <-list(rep("", dim(anovaDVoutput)[1]))
-colnames(anovaDVoutput) <- c('Eta-squared','F','df','df','p','Bayes_Factor_alt_vs_null','Bayes_Factor_null_vs_alt')
+colnames(anovaDVoutput) <- c('Eta-squared','Wilks_Lambda','F','df','df_res','p','Bayes_Factor_alt_vs_null','Bayes_Factor_null_vs_alt')
 rownames(anovaDVoutput) <- variables
-anovaDVoutput[,1:4] <- anovaDVoutput[,1:4]
-anovaDVoutput[,5] <- anovaDVoutput[,5]
+# anovaDVoutput[,1:4] <- anovaDVoutput[,1:4]
+# anovaDVoutput[,5] <- anovaDVoutput[,5]
 
 
 DFAoutput <- list(  
@@ -583,11 +585,12 @@ if (verbose == TRUE) {
 	message('\n\nOne-way ANOVAs using the scores on a discriminant function as the DV:\n')
 	print(round_boc(anovaDFoutput), print.gap=4)
 	
-	message('\n\n\nOne-way ANOVAs on the original DVs\n') 
-	message('\n(provided for comparisons with the ANOVAs on the discriminant functions):\n')
+	message('\n\nOne-way ANOVAs on the original DVs') 
+	message('\n(provided for comparisons with the ANOVAs on the discriminant functions;')
+	message(' In SPSS, this is labelled, "Tests of Equality of Group Means":)\n')
 	print(round_boc(anovaDVoutput), print.gap=4)
 	
-	message('\n\n\nt-tests and effect sizes for group differences on the discriminant functions:\n')
+	message('\n\n\nt-tests and effect sizes for group differences on the discriminant functions\n\n')
 	DFnames <- names(ttestDFoutput)
 	for (lupe in 1:length(ttestDFoutput)) {
 		# message(DFnames[lupe],'\n')
@@ -597,25 +600,25 @@ if (verbose == TRUE) {
 
 		resultsM <- ttestDFoutput[[lupe]]
 
-		message("\n\nGroup comparisons - significance tests:\n\n")
+		message("\nGroup comparisons - significance tests\n")
 		print(round_boc(resultsM[1:12], round_non_p = 2), print.gap=3)
 		
-		message("\nGroup comparisons - confidence intervals, effect sizes, and Bayes Factors:\n\n")
+		message("\nGroup comparisons - confidence intervals, effect sizes, and Bayes Factors\n")
 		print(round_boc(resultsM[c(1,5,16:21)], round_non_p = 2), print.gap=3); message('\n')
 	}
 	
-	message('\n\nt-tests and effect sizes for group differences on the original DVs\n')
-	message('\n(provided for comparisons with the t-tests on the discriminant functions):\n')
+	message('\nt-tests and effect sizes for group differences on the original DVs\n')
+	message('(provided for comparisons with the t-tests on the discriminant functions)\n\n')
 	for (lupe in 1:length(ttestDVoutput)) {
 		message(lsnoms[lupe],':',sep="")
 		# print(round_boc(ttestDVoutput[[lupe]]), row.names = FALSE, print.gap=3); message('\n')
 
 		resultsM <- ttestDVoutput[[lupe]]
 
-		message("\n\nGroup comparisons - significance tests:\n\n")
+		message("\nGroup comparisons - significance tests:\n")
 		print(round_boc(resultsM[1:12], round_non_p = 2), print.gap=3)
 		
-		message("\nGroup comparisons - confidence intervals, effect sizes, and Bayes Factors:\n\n")
+		message("\nGroup comparisons - confidence intervals, effect sizes, and Bayes Factors:\n")
 		print(round_boc(resultsM[c(1,5,16:21)], round_non_p = 2), print.gap=3); message('\n')
 	}
 	

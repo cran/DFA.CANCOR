@@ -110,6 +110,14 @@ colnames(output$stand2) <- paste('CV', 1:ncol(output$stand2),sep = "")
 # print(round(output$stand2,2))
 
 
+# scores on the canonical functions
+# standardize the variables
+Z.set1 <- scale(set1data, center=TRUE, scale=FALSE)
+Z.set2 <- scale(set2data, center=TRUE, scale=FALSE)
+set1_scores <- Z.set1 %*% output$raw1
+set2_scores <- Z.set2 %*% output$raw2
+
+
 
 if (plot == TRUE | is.null(plot)) {
 
@@ -251,12 +259,14 @@ CANCORoutput <- list(
    CoefStandSet2 = output$stand2,   
    CorrelSet1 = CorrelSet1,
    CorrelSet2 = CorrelSet2,
-   CorrelSet1n2 = CorrelSet1n2
+   CorrelSet1n2 = CorrelSet1n2,
+   set1_scores = set1_scores,
+   set2_scores = set2_scores
 )
 
-#return(invisible(CANCORoutput))
+return(invisible(CANCORoutput))
 
-class(CANCORoutput) <- "CANCORout"
+class(CANCORoutput) <- "CANCORoutput"
 
 }
 
