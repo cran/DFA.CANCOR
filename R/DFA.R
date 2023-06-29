@@ -179,10 +179,10 @@ colnames(evals) <- c('Function','eigenvalue','proportion of variance','canonical
 # as the values for p & q; but to get correct results for DFA using this function,
 # p = the # of DVs and q = the # of DFs 
 
-mv_Wilk <- Wilk(rho=evals[,4], Ncases=Ncases, p = Ndfs, q = Ndvs)
-colnames(mv_Wilk) <- c('Wilk\'s Lambda', 'F-approx.', 'df1', 'df2', 'p')
-rownames(mv_Wilk) <- paste(1:nrow(mv_Wilk), paste("through ", nrow(mv_Wilk), sep = ""))
-# print(round_boc(mv_Wilk), print.gap=4); message('\n')
+mv_Wilks <- Wilks(rho=evals[,4], Ncases=Ncases, p = Ndfs, q = Ndvs)
+colnames(mv_Wilks) <- c('Wilk\'s Lambda', 'F-approx.', 'df1', 'df2', 'p')
+rownames(mv_Wilks) <- paste(1:nrow(mv_Wilks), paste("through ", nrow(mv_Wilks), sep = ""))
+# print(round_boc(mv_Wilks), print.gap=4); message('\n')
 
 mv_Pillai <- Pillai(rho=evals[,4], Ncases=Ncases, p = Ndfs, q = Ndvs)
 colnames(mv_Pillai) <- c('Pillai-Bartlett Trace', 'F-approx.', 'df1', 'df2', 'p')
@@ -299,7 +299,7 @@ rownames(anovaDVoutput) <- variables
 
 DFAoutput <- list(  
    evals = evals,
-   mv_Wilk =mv_Wilk,
+   mv_Wilks =mv_Wilks,
    mv_Pillai = mv_Pillai,
    mv_Hotelling = mv_Hotelling,
    mv_Roy = mv_Roy,
@@ -549,7 +549,7 @@ if (verbose == TRUE) {
 	
 	message('\n\nMultivariate peel-down significance tests:\n')  # using p.asym from the CCP package
 	
-	print(round_boc(mv_Wilk), print.gap=4); message('\n')
+	print(round_boc(mv_Wilks), print.gap=4); message('\n')
 
 	print(round_boc(mv_Pillai), print.gap=4); message('\n')
 	

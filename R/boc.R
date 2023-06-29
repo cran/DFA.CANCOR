@@ -920,7 +920,7 @@ PressQ <- function(freqs) {
 
 
 
-Wilk <- function(rho, Ncases, p, q) {
+Wilks <- function(rho, Ncases, p, q) {
 	
 	# rho = the canonical correlations (all of them)
 	# Ncases = the sample size
@@ -942,15 +942,16 @@ Wilk <- function(rho, Ncases, p, q) {
 		
 		wilks[lupe] <- prod(1 / (1 + eigval[lupe:NCVs]))	
 		
-		t <- sqrt((p^2 * q^2 - 4)/(p^2 + q^2 - 5))
-		
+		if ( (p^2 * q^2 - 4) > 0)  { t <- sqrt((p^2 * q^2 - 4)/(p^2 + q^2 - 5))
+		} else { t <- 1}
+			
 		df1[lupe] <- p * q
 		df2[lupe] <- m * t - p * q/2 + 1
 		
 		Fwilks[lupe] <- (1 - wilks[lupe]^(1/t)) / wilks[lupe]^(1/t) * df2[lupe] / df1[lupe]
-		
+
 		p <- p - 1
-		q <- q - 1
+		q <- q - 1 
 	}
 	
 	pvalue <- pf(Fwilks, df1, df2, lower.tail = FALSE)

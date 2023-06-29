@@ -54,7 +54,7 @@
 \value{If verbose = TRUE, the displayed output includes descriptive statistics for the groups, 
 	   tests of univariate and multivariate normality, 
 	   the results of tests of the homogeneity of the group variance-covariance matrices, 
-	   eigenvalues & canonical correlations, Wilks lambda & peel-down statistics,
+	   eigenvalues & canonical correlations, Wilks' lambda & peel-down statistics,
 	   raw and standardized discriminant function coefficients, 
 	   structure coefficients, functions at group centroids, 
 	   one-way ANOVA tests of group differences in scores on each discriminant function,
@@ -66,7 +66,7 @@
 	   The returned output is a list with elements
 
   \item{evals}{eigenvalues and canonical correlations}
-  \item{mv_Wilk}{The Wilk's lambda multivariate test}
+  \item{mv_Wilks}{The Wilks' lambda multivariate test}
   \item{mv_Pillai}{The Pillai-Bartlett multivariate test}
   \item{mv_Hotelling}{The Lawley-Hotelling multivariate test}
   \item{mv_Roy}{Roy's greatest characteristic root multivariate test}

@@ -35,7 +35,7 @@
 	   
  	   The returned output is a list with elements
   \item{cancorrels}{canonical correlations and their significance tests}
- \item{mv_Wilk}{The Wilk's lambda multivariate test}
+ \item{mv_Wilks}{The Wilks' lambda multivariate test}
   \item{mv_Pillai}{The Pillai-Bartlett multivariate test}
   \item{mv_Hotelling}{The Lawley-Hotelling multivariate test}
   \item{mv_Roy}{Roy's greatest characteristic root multivariate test}

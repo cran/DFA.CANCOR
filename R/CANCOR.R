@@ -29,10 +29,10 @@ output <- canonical.cor(set1data, set2data) # source("http://www.statpower.net/R
 
 cancorrels <- output$cancorrels
 
-mv_Wilk <- Wilk(rho= cancorrels[,2], Ncases=Ncases, p = NVset1, q = NVset2)
-colnames(mv_Wilk) <- c('Wilk\'s Lambda', 'F-approx. ', 'df1', 'df2', 'p')
-rownames(mv_Wilk) <- paste(1:nrow(mv_Wilk), paste("through ", nrow(mv_Wilk), sep = ""))
-# print(round(mv_Wilk,4)); message('\n')
+mv_Wilks <- Wilks(rho= cancorrels[,2], Ncases=Ncases, p = NVset1, q = NVset2)
+colnames(mv_Wilks) <- c('Wilk\'s Lambda', 'F-approx. ', 'df1', 'df2', 'p')
+rownames(mv_Wilks) <- paste(1:nrow(mv_Wilks), paste("through ", nrow(mv_Wilks), sep = ""))
+# print(round(mv_Wilks,4)); message('\n')
 
 mv_Pillai <- Pillai(rho= cancorrels[,2], Ncases=Ncases, p = NVset1, q = NVset2)
 colnames(mv_Pillai) <- c('Pillai-Bartlett Trace', 'F-approx. ', 'df1', 'df2', 'p')
@@ -190,7 +190,7 @@ if (verbose) {
 	
 	message('\n\nMultivariate peel-down significance tests:\n')
 	
-	print(round(mv_Wilk,4), print.gap=4); message('\n')
+	print(round(mv_Wilks,4), print.gap=4); message('\n')
 	
 	print(round(mv_Pillai,4), print.gap=4); message('\n')
 	
@@ -243,7 +243,7 @@ if (verbose) {
 
 CANCORoutput <- list(  
    cancorrels = cancorrels,
-   mv_Wilk = mv_Wilk,
+   mv_Wilks = mv_Wilks,
    mv_Pillai = mv_Pillai,
    mv_Hotelling = mv_Hotelling,
    mv_Roy = mv_Roy,
