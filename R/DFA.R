@@ -523,7 +523,6 @@ if (plot == TRUE) {
 		# colnames(centroidsZ_2) <-  c(paste("DF ", 1:ncol(centroidsSDsZ), sep=""))		
 	# }
 
-
 	centroidsZ_2 <- centroidsZ		
 	colnames(centroidsZ_2) <-  c(paste("DF ", 1:ncol(centroidsSDsZ), sep=""))		
 
@@ -593,10 +592,12 @@ if (verbose == TRUE) {
 	message('\n\n\nt-tests and effect sizes for group differences on the discriminant functions\n\n')
 	DFnames <- names(ttestDFoutput)
 	for (lupe in 1:length(ttestDFoutput)) {
-		# message(DFnames[lupe],'\n')
-		# print(round_boc(ttestDFoutput[[lupe]]), row.names = FALSE, print.gap=3); message('\n')
+	  
+		message(DFnames[lupe],':')
+		
+	  # print(round_boc(ttestDFoutput[[lupe]]), row.names = FALSE, print.gap=3); message('\n')
 
-		message(lsnoms[lupe],':',sep="")
+		# message(lsnoms[lupe],':',sep="")
 
 		resultsM <- ttestDFoutput[[lupe]]
 

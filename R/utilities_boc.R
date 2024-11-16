@@ -78,6 +78,114 @@ DFC_post_class_stats <- function (DFAposteriors, grpnames, Ngroups, groupNs, ver
 
 
 
+umvn <- function(data) {
+  
+  # descriptive statistics & tests of univariate & multivariate normality -- from the MVN package
+  
+  # the MVN::mvn runs only 1 uni- and 1-multivariate test at a time, & the output format for Mardia is awful
+  
+  if (ncol(data) == 1) {
+    
+    datemp <- cbind(data, jitter(data)); colnames(datemp) <- c(colnames(data), 'jitd')
+    
+    res1 <- MVN::mvn(data=datemp, univariateTest = "SW")
+    
+    Shapiro_Wilk <- res1$"univariateNormality"[1,]
+    
+    descriptives <- res1$"Descriptives"
+    
+    Shapiro_Francia <- MVN::mvn(data=datemp, univariateTest = "SF")$"univariateNormality"[1,]
+    
+    Anderson_Darling <- MVN::mvn(data=datemp, univariateTest = "AD", desc = FALSE)$"univariateNormality"[1,]
+    
+    Cramer_von_Mises <- MVN::mvn(data=datemp, univariateTest = "CVM", desc = FALSE)$"univariateNormality"[1,]
+    
+    Lilliefors <- MVN::mvn(data=datemp, univariateTest = "Lillie", desc = FALSE)$"univariateNormality"[1,]
+    
+    univariate_tests <- rbind(Shapiro_Wilk, Shapiro_Francia, Anderson_Darling, Cramer_von_Mises, Lilliefors)
+    
+    multivariate_tests <- NA
+  }
+  
+  if (ncol(data) > 1) {
+    
+    res1 <- MVN::mvn(data=data, mvnTest = "mardia", univariateTest = "SW")
+    
+    descriptives <- res1$"Descriptives"
+    
+    Shapiro_Wilk <- res1$"univariateNormality"
+    
+    Mardia       <- res1$"multivariateNormality"[1:2,]
+    
+    
+    res2 <- MVN::mvn(data = data, mvnTest = "hz", univariateTest = "SF",  desc = FALSE)
+    
+    Shapiro_Francia <- res2$"univariateNormality"
+    
+    Henze_Zirkler   <- res2$"multivariateNormality"
+    
+    
+    res3 <- MVN::mvn(data = data, mvnTest = "royston", univariateTest = "AD",  desc = FALSE)
+    
+    Anderson_Darling <-res3$"univariateNormality"
+    
+    Royston <- res3$"multivariateNormality"
+    
+    
+    res4 <- MVN::mvn(data = data, mvnTest = "dh", univariateTest = "CVM",  desc = FALSE)    
+    
+    Cramer_von_Mises <- res4$"univariateNormality"
+    
+    Doornik_Hansen <- res4$"multivariateNormality"
+    
+    
+    Lilliefors <- MVN::mvn(data=data, univariateTest = "Lillie", desc = FALSE)$"univariateNormality"
+    
+    
+    univariate_tests <- list(Shapiro_Wilk, Shapiro_Francia, Anderson_Darling, Cramer_von_Mises, Lilliefors)
+    
+    
+    df1 <- data.frame(Test=rbind(Mardia[1], Henze_Zirkler[,1], Royston[,1], Doornik_Hansen[,1]))
+    
+    m2 <- as.numeric(levels(unlist(Mardia[2])))
+    
+    df2 <- data.frame(Statistic = rbind( m2[1], m2[2], Henze_Zirkler[,2], Royston[,2], Doornik_Hansen[,2]))
+    
+    m3 <- as.numeric(levels(unlist(Mardia[3])))
+    
+    df3 <- data.frame(p = rbind( m3[1], m3[2], Henze_Zirkler[,3], Royston[,3], Doornik_Hansen[,4]))
+    
+    m4 <- unlist(Mardia[4])
+    
+    df4 <- data.frame(Normality= rbind( m4[1], m4[2], Henze_Zirkler[,4], Royston[,4], Doornik_Hansen[,5]))
+    
+    multivariate_tests <- cbind(df1, df2, df3, df4); colnames(multivariate_tests)[4] <- 'Normality'
+  }
+  
+  skewSE <- sqrt(6 / descriptives$n)
+  skewZ  <- descriptives$Skew / skewSE	
+  skewP  <- pnorm(abs(skewZ), lower.tail=FALSE) * 2     # 2-tailed sig test
+  
+  kurtosisSE <- sqrt(24 / descriptives$n)
+  kurtosisZ  <- descriptives$Kurtosis / kurtosisSE	
+  kurtosisP  <- pnorm(abs(kurtosisZ), lower.tail=FALSE) * 2     # 2-tailed sig test
+  
+  descriptives <- cbind(descriptives[,c(1:6,9)], skewZ, skewP, descriptives$Kurtosis, kurtosisZ, kurtosisP)
+  colnames(descriptives)[1] <- 'N'
+  colnames(descriptives)[8:12] <- c('z (Skew)','p (Skew)','Kurtosis','z (Kurtosis)','p (Kurtosis)')
+  
+  if (ncol(data) == 1) descriptives <- descriptives[1,]
+  
+  output <- list(  
+    descriptives = descriptives,
+    univariate_tests = univariate_tests,
+    multivariate_tests = multivariate_tests
+  )
+  
+  return(invisible(output))
+  
+}
+
 
 
 
@@ -574,60 +682,6 @@ betaboc <- function (b,iv,dv) {
 }
 
 
-
-umvn <- function(data) {
-	
-	# descriptive statistics & tests of univariate & multivariate normality -- from the MVN package
-		
-	# # uvn1 <- uniNorm(data, type = "SW", desc = TRUE)  # Shapiro-Wilk test of univariate normality
-	# # uvn2 <- uniNorm(data, type = "CVM", desc = FALSE)  # Cramer- von Mises test of univariate normality
-	# # uvn3 <- uniNorm(data, type = "Lillie", desc = FALSE)  # Lilliefors (Kolmogorov-Smirnov) test of univariate normality
-	# # uvn4 <- uniNorm(data, type = "SF", desc = FALSE)  # Shapiro-Francia test of univariate normality
-	# # uvn5 <- uniNorm(data, type = "AD", desc = FALSE)  # Anderson-Darling test of univariate normality
-			
-
-	res1 <- MVN::mvn(data = data, mvnTest = "mardia", univariateTest = "SW") 
-	res2 <- MVN::mvn(data = data, mvnTest = "hz")
-	res3 <- MVN::mvn(data = data, mvnTest = "royston")
-	res4 <- MVN::mvn(data = data, mvnTest = "dh",  desc = FALSE)    
-
-	descriptives <- res1$"Descriptives"
-	descriptives <- descriptives[,-c(7,8)]
-	
-	skewSE <- sqrt(6 / descriptives$n)
-	skewZ  <- descriptives$Skew / skewSE	
-	skewP  <- pnorm(abs(skewZ), lower.tail=FALSE) * 2     # 2-tailed sig test
-	
-	kurtosisSE <- sqrt(24 / descriptives$n)
-	kurtosisZ  <- descriptives$Kurtosis / kurtosisSE	
-	kurtosisP  <- pnorm(abs(kurtosisZ), lower.tail=FALSE) * 2     # 2-tailed sig test
-
-	descriptives <- cbind(descriptives[,1:7], skewZ, skewP, descriptives$Kurtosis, kurtosisZ, kurtosisP)
-	colnames(descriptives)[8:12] <- c('Skew z','Skew p','Kurtosis','Kurtosis z','Kurtosis p')
-
-	Shapiro_Wilk   <- res1$"univariateNormality"
-	
-	Mardia         <- res1$"multivariateNormality"[1:2,]
-	Henze_Zirkler  <- res2$"multivariateNormality"
-	Royston        <- res3$"multivariateNormality"
-	Doornik_Hansen <- res4$"multivariateNormality"
-	
-	
-#	result$multivariateOutliers
-
-
-umvnoutput <- list(  
-   descriptives = descriptives,
-   Shapiro_Wilk = Shapiro_Wilk,
-   Mardia = Mardia,
-   Henze_Zirkler = Henze_Zirkler,
-   Royston = Royston,
-   Doornik_Hansen = Doornik_Hansen
-)
-
-return(invisible(umvnoutput))
-
-}
 
 
 
@@ -1171,3 +1225,81 @@ Rao <- function(rho, Ncases, p, q) {
   
    
    
+
+
+
+
+
+RECODE <- function(data, old = NULL, new = NULL, type = 'reverse', max_value = NULL,
+                   real_min = NULL, real_max = NULL, new_min = NULL, new_max = NULL ) {
+  
+  # data <- MISSING_DROP(data)
+  
+  # numeric only notice
+  if (!is.numeric(data))  message('\n Not all values of "data" are numeric. Expect errors.')
+  
+  data_recoded <- data
+  
+  # when old & new are specified
+  if (!is.null(old) & !is.null(new)) {
+    
+    # display the recode requests	
+    for (lupe in 1:length(old)) {
+      
+      if (length(old) != length(new)) 
+        message('\nThe specified old and new values have different lengths. Expect errors.\n')
+      
+      message('\n', old[lupe], ' will be recoded to ', new[lupe] )
+      
+      data_recoded <- ifelse(data == old[lupe], new[lupe], data_recoded)							
+    }
+  }	
+  
+  # when type is specified
+  if (!is.null(type) & is.null(old) & is.null(new)) {
+    
+    if (type == 'reverse') {
+      
+      if (is.null(max_value))  max_value <- max(data, na.rm = TRUE)
+      
+      data_recoded <- (min(data, na.rm = TRUE) + max(data, na.rm = TRUE)) - data			
+    }
+    
+    if (type == 'new_range') {
+      
+      # Sometimes the items in a pool have different response option ranges, e.g., some
+      # on a 5-pt scale and others on a 6-pt scale. This option changes the metric/range of
+      # a specified item to a desired metric (e.g., so that scales scores based on
+      # all of the items in the pool can be computed). This alters item scores and
+      # the new item values may not be integers.
+      
+      # For each item response, compute the percent value on the real/used item, & then find
+      # the corresponding value on the desired new item metric for the same percentage.
+      
+      # check if the specified real_min & real_max are true for the data
+      if (min(data) < real_min) {
+        real_min <- min(data)
+        message('\nreal_min has been reset to the smallest value in the data: ', min(data))
+      }
+      if (max(data) > real_max) {
+        real_max <- max(data)
+        message('\nreal_max has been reset to the largest value in the data: ', max(data))
+      }
+      
+      # get the percentage value for the old/real response options
+      percent <- (real_min:real_max - real_min) / (real_max - real_min)
+      
+      # compute the corresponding new possible response option values 
+      newscore <- (percent * (new_max - new_min)) + new_min
+      
+      # now go through the items, converting the old/real responses to the new values
+      #	data_recoded <- newscore[data]  # simple, but problem = doesn't work with 0s
+      data_recoded <- c(newscore, data)[match(data, c(percent, data))]
+    }
+  }
+  
+  return(invisible(data_recoded))
+}	
+
+
+

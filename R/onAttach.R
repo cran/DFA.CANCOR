@@ -9,6 +9,7 @@
 
 NULL
 
+utils::globalVariables(c("Outlier"))
 
 # cat("Package: DFA.CANCOR    Version: ", packageDescription("DFA.CANCOR")$Version,"\n")
 

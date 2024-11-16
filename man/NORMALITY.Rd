@@ -5,7 +5,7 @@
 \usage{NORMALITY(data, groups, variables, verbose)}
 \arguments{
   \item{data}{
-  \code{}A dataframe where the rows are cases & the columns are the variables.}
+  \code{}A dataframe or numeric matrix where the rows are cases & the columns are the variables.}
 
   \item{groups}{
   \code{}(optional) The name of the groups variable in the dataframe, \cr e.g., groups = 'Group'.}
@@ -17,23 +17,34 @@
   \item{verbose}{
   \code{}Should detailed results be displayed in the console? \cr The options are: TRUE (default) or FALSE.}
 }
-\value{If "groups" is not specified, the analyses will be run on all of the variables in "data".
+\details{If "groups" is not specified, the analyses will be run on all of the variables in "data".
+     If "variables" is specified, the analyses will be run on the "variables" in "data".
 	   If "groups" is specified, the analyses will be run for every value of "groups".
-	   If "variables" is specified, the analyses will be run on the "variables" in "data".
 	   If verbose = TRUE, the displayed output includes descriptive statistics and
 	   tests of univariate and multivariate normality.
-	   	   
-	   The returned output is a list with elements
+}
+\value{The returned output is a list with the following elements:
   \item{descriptives}{descriptive statistics, including skewness and kurtosis}
-  \item{Shapiro_Wilk}{the Shapiro_Wilk test of univariate normality}
-  \item{Mardia}{the Mardia test of multivariate normality}
-  \item{Henze_Zirkler}{the Henze-Zirkler test of multivariate normality}
-  \item{Royston}{the Royston test of multivariate normality}
-  \item{Doornik_Hansen}{the Doornik_Hansen test of multivariate normality}
+  \item{univariate_tests}{the univariate normality tests}
+  \item{multivariate_tests}{the multivariate normality tests}
 }
 \references{
-	{Korkmaz, S., Goksuluk, D., Zararsiz, G. (2014). MVN: An R package for assessing 
+  {Doornik, J. A. & Hansen, H. (2008). An Omnibus test for univariate and 
+   multivariate normality. \emph{Oxford Bulletin of Economics and Statistics 70,} 927-939.}
+\cr\cr {Henze, N., & Wagner, T. (1997), A new approach to the BHEP tests for multivariate 
+   normality. \emph{Journal of Multivariate Analysis, 62,} 1-23.}
+\cr\cr {Johnson, R. A., & Wichern, D. W. (2007). \emph{Applied Multivariate 
+   Statistical Analysis (3rd. ed.).} New Jersey, NJ: Prentice Hall.}
+\cr\cr {Korkmaz, S., Goksuluk, D., Zararsiz, G. (2014). MVN: An R package for assessing 
 	 multivariate normality. \emph{The R Journal, 6(2),} 151-162.}	
+\cr\cr {Mardia, K. V. (1970), Measures of multivariate skewnees and kurtosis with 
+   applications. \emph{Biometrika, 57(3),} 519-530.}
+\cr\cr {Mardia, K. V. (1974), Applications of some measures of multivariate skewness 
+   and kurtosis for testing normality and robustness studies. \emph{Sankhy A, 36,} 115-128.}
+\cr\cr {Royston, J. P. (1992). Approximating the Shapiro-Wilk W-Test for non-normality. 
+   \emph{Statistics and Computing, 2,} 117-119.}
+\cr\cr {Shapiro, S., & Wilk, M. (1965). An analysis of variance test for normality. 
+   \emph{Biometrika, 52,} 591611.}
 \cr\cr {Szekely,G. J., & Rizzo, M. L. (2017). The energy of data. \emph{Annual 
 	 Review of Statistics and Its Application 4,} 447-79.}	 
 \cr\cr {Tabachnik, B. G., & Fidell, L. S. (2019). \emph{Using multivariate statistics (7th ed.).} New York, NY: Pearson.}
@@ -46,7 +57,7 @@ NORMALITY(data = na.omit(data_CANCOR$DeLeo_2013[c(
           'Gambling_Behavior','CIAS_Total','Impulsivity','Social_Interaction_Anxiety',
           'Depression','Social_Support','Intolerance_of_Deviance','Family_Morals',
           'Family_Conflict','Grade_Point_Average')]))
- 
+
 \donttest{
 # data from Field et al. (2012)
 NORMALITY(data = data_DFA$Field_2012, 
