@@ -1,25 +1,25 @@
 export(DFA, CANCOR, GROUP.DIFFS, GROUP.PROFILES, HOMOGENEITY, LINEARITY, 
        NORMALITY, OUTLIERS, PLOT_LINEARITY)
 
-importFrom("stats", "aggregate", "anova", "bartlett.test",
-           "cor","cor.test", "cov", "fligner.test", "lm", "lowess", "mahalanobis", 
-           "manova", "na.omit",  "pchisq", "pf", "pnorm", "predict", "qchisq", 
-           "qnorm", "sd", "t.test", "pt", "qf", "qt", "qtukey", "var",
-           "dnorm", "ecdf", "qqline", "qqnorm")
+importFrom("stats", aggregate, anova, bartlett.test,
+           cor,cor.test, cov, fligner.test, lm, lowess, mahalanobis, 
+           manova, na.omit,  pchisq, pf, pnorm, predict, qchisq, 
+           qnorm, sd, t.test, pt, qf, qt, qtukey, var,
+           dnorm, ecdf, qqline, qqnorm, quantile)
 
-importFrom("graphics", "arrows", "boxplot", "hist", "matplot", "axis", "legend", 
-           "title", "barplot", "box", "par", "layout", "abline", "lines", "plot")
+importFrom("graphics", arrows, boxplot, hist, matplot, axis, legend, 
+           title, barplot, box, par, layout, abline, lines, plot)
            
 importFrom("grDevices", bitmap, bmp, boxplot.stats, dev.off, jpeg, png, tiff)           
 
 importFrom(utils, packageDescription, globalVariables)
 
-importFrom("grDevices", "rainbow")
+importFrom(grDevices, rainbow)
 
-importFrom("BayesFactor", "ttest.tstat", "anovaBF","extractBF")
+importFrom(BayesFactor, ttest.tstat, anovaBF, extractBF, ttestBF, posterior)
 
-importFrom("MVN", "mvn")
+importFrom(MVN, mvn)
 
-importFrom("MASS", "cov.mcd")
+importFrom(MASS, cov.mcd)
 
-importFrom("mvoutlier", "arw")
+importFrom(mvoutlier, arw)

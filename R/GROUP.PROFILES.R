@@ -12,7 +12,7 @@ GROUP.PROFILES <- function(data, groups, variables,
   donnes <- donnes[order(donnes[,1]),]
   
   # group names, in the same order as in the data matrix
-  grpnames <- as.vector(as.matrix(na.omit(donnes[groups]))) 
+  grpnames <- as.vector(as.matrix(na.omit(donnes[,groups]))) 
   grpnames <- unique(grpnames)
   grpnums  <- seq(1:length(grpnames))
   Ngroups  <- length(grpnames)
@@ -76,7 +76,7 @@ GROUP.PROFILES <- function(data, groups, variables,
       #	  barplot(1, ylim=ylim, ylab="DV")
       
       plot_bar <- barplot(t(MNs), beside=TRUE, legend.text=FALSE, col=cols, 
-                          ylim=ylim, ylab="DV", yaxt="n", xpd=FALSE) #, axes=FALSE)  # , xpd=FALSE)
+                          ylim=ylim, ylab="DV", yaxt="n", xpd=FALSE) #, axes=FALSE) 
       
       yyy = seq(ylim[1], ylim[2], by=.2)
       

@@ -48,8 +48,9 @@
 	When data has many cases (e.g., > 1000), the leave-one-out cross-validation analyses can
 	be time-consuming to run. Set CV = FALSE to bypass the predictive DFA cross-validation analyses.
 	
-	See the documentation below for the GROUP.DIFFS function for information on the interpretation of the
-	Bayes factors and effect sizes that are produced for the group comparisons.
+	See the documentation below for the GROUP.DIFFS function for information on the 
+	interpretation of the Bayesian coefficients and effect sizes that are produced for
+	the group comparisons.
 }
 \value{If verbose = TRUE, the displayed output includes descriptive statistics for the groups, 
 	   tests of univariate and multivariate normality, 

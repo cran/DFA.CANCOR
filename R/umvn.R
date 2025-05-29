@@ -10,19 +10,19 @@ umvn <- function(data) {
     
     datemp <- cbind(data, jitter(data)); colnames(datemp) <- c(colnames(data), 'jitd')
     
-    res1 <- MVN::mvn(data=datemp, univariateTest = "SW")
+    res1 <- MVN::mvn(data=datemp, univariate_test = "SW")
     
     Shapiro_Wilk <- res1$"univariateNormality"[1,]
     
     descriptives <- res1$"Descriptives"
     
-    Shapiro_Francia <- MVN::mvn(data=datemp, univariateTest = "SF")$"univariateNormality"[1,]
+    Shapiro_Francia <- MVN::mvn(data=datemp, univariate_test = "SF")$"univariateNormality"[1,]
     
-    Anderson_Darling <- MVN::mvn(data=datemp, univariateTest = "AD", desc = FALSE)$"univariateNormality"[1,]
+    Anderson_Darling <- MVN::mvn(data=datemp, univariate_test = "AD", desc = FALSE)$"univariateNormality"[1,]
     
-    Cramer_von_Mises <- MVN::mvn(data=datemp, univariateTest = "CVM", desc = FALSE)$"univariateNormality"[1,]
+    Cramer_von_Mises <- MVN::mvn(data=datemp, univariate_test = "CVM", desc = FALSE)$"univariateNormality"[1,]
     
-    Lilliefors <- MVN::mvn(data=datemp, univariateTest = "Lillie", desc = FALSE)$"univariateNormality"[1,]
+    Lilliefors <- MVN::mvn(data=datemp, univariate_test = "Lillie", desc = FALSE)$"univariateNormality"[1,]
     
     univariate_tests <- rbind(Shapiro_Wilk, Shapiro_Francia, Anderson_Darling, Cramer_von_Mises, Lilliefors)
     
@@ -31,7 +31,7 @@ umvn <- function(data) {
   
   if (ncol(data) > 1) {
     
-    res1 <- MVN::mvn(data=data, mvnTest = "mardia", univariateTest = "SW")
+    res1 <- MVN::mvn(data=data, mvn_test = "mardia", univariate_test = "SW")
     
     descriptives <- res1$"Descriptives"
     
@@ -40,28 +40,28 @@ umvn <- function(data) {
     Mardia       <- res1$"multivariateNormality"[1:2,]
     
     
-    res2 <- MVN::mvn(data = data, mvnTest = "hz", univariateTest = "SF",  desc = FALSE)
+    res2 <- MVN::mvn(data = data, mvn_test = "hz", univariate_test = "SF",  desc = FALSE)
     
     Shapiro_Francia <- res2$"univariateNormality"
     
     Henze_Zirkler   <- res2$"multivariateNormality"
     
     
-    res3 <- MVN::mvn(data = data, mvnTest = "royston", univariateTest = "AD",  desc = FALSE)
+    res3 <- MVN::mvn(data = data, mvn_test = "royston", univariate_test = "AD",  desc = FALSE)
     
     Anderson_Darling <-res3$"univariateNormality"
     
     Royston <- res3$"multivariateNormality"
     
     
-    res4 <- MVN::mvn(data = data, mvnTest = "dh", univariateTest = "CVM",  desc = FALSE)    
+    res4 <- MVN::mvn(data = data, mvn_test = "doornik_hansen", univariate_test = "CVM",  desc = FALSE)    
     
     Cramer_von_Mises <- res4$"univariateNormality"
     
     Doornik_Hansen <- res4$"multivariateNormality"
     
     
-    Lilliefors <- MVN::mvn(data=data, univariateTest = "Lillie", desc = FALSE)$"univariateNormality"
+    Lilliefors <- MVN::mvn(data=data, univariate_test = "Lillie", desc = FALSE)$"univariateNormality"
     
     
     univariate_tests <- list(Shapiro_Wilk, Shapiro_Francia, Anderson_Darling, Cramer_von_Mises, Lilliefors)
