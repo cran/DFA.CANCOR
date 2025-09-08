@@ -1,8 +1,4 @@
 
-	
-
-
-
 
 DFC_post_class_stats <- function (DFAposteriors, grpnames, Ngroups, groupNs, verbose=FALSE) {
 

@@ -412,11 +412,11 @@ DFA <- function(data, groups, variables, plot=TRUE,
     
     PropOrigCorrect <- round((sum(diag(freqs_ORIG_PRED)) / sum(freqs_ORIG_PRED)),3)	
     
-    # rowfreqs_ORIG_PRED <- margin.table(freqs_ORIG_PRED, 1)
-    # colfreqs_ORIG_PRED <- margin.table(freqs_ORIG_PRED, 2)
-    # cellprops_ORIG_PRED <- prop.table(freqs_ORIG_PRED)
-    # rowprops_ORIG_PRED  <- prop.table(freqs_ORIG_PRED, 1)
-    # colprops_ORIG_PRED  <- prop.table(freqs_ORIG_PRED, 2)
+    rowfreqs_ORIG_PRED <- margin.table(freqs_ORIG_PRED, 1)
+    colfreqs_ORIG_PRED <- margin.table(freqs_ORIG_PRED, 2)
+    cellprops_ORIG_PRED <- prop.table(freqs_ORIG_PRED)
+    rowprops_ORIG_PRED  <- prop.table(freqs_ORIG_PRED, 1)
+    colprops_ORIG_PRED  <- prop.table(freqs_ORIG_PRED, 2)
     
     # posterior probability stats
     grp_post_stats <- DFC_post_class_stats(classes_PRED$posteriors, grpnames=grpnames, 
@@ -447,11 +447,11 @@ DFA <- function(data, groups, variables, plot=TRUE,
       
       PropCrossValCorrect <- sum(diag(freqs_ORIG_CV)) / sum(freqs_ORIG_CV)			
       
-      # rowfreqs_ORIG_CV <- margin.table(freqs_ORIG_CV, 1)
-      # colfreqs_ORIG_CV <- margin.table(freqs_ORIG_CV, 2)		
-      # cellprops_ORIG_CV <- prop.table(freqs_ORIG_CV)
-      # rowprops_ORIG_CV  <- prop.table(freqs_ORIG_CV, 1)
-      # colprops_ORIG_CV  <- prop.table(freqs_ORIG_CV, 2)
+      rowfreqs_ORIG_CV <- margin.table(freqs_ORIG_CV, 1)
+      colfreqs_ORIG_CV <- margin.table(freqs_ORIG_CV, 2)
+      cellprops_ORIG_CV <- prop.table(freqs_ORIG_CV)
+      rowprops_ORIG_CV  <- prop.table(freqs_ORIG_CV, 1)
+      colprops_ORIG_CV  <- prop.table(freqs_ORIG_CV, 2)
       
       
       # Predicted vs Cross-Validated (leave-one-out cross-validation)
@@ -463,22 +463,27 @@ DFA <- function(data, groups, variables, plot=TRUE,
       # attributes(freqs_ORIG_CV)
       
       
-      # freqs_PRED_CV <- squareTable(var1=classes_PRED$dfa_class, var2=classes_CV, 
-      # faclevels=grpnames, tabdimnames=c('Predicted','Cross-Validated'))
+      freqs_PRED_CV <- squareTable(var1=classes_PRED$dfa_class, var2=classes_CV,
+      faclevels=grpnames, tabdimnames=c('Predicted','Cross-Validated'))
       
-      # colnames(freqs_PRED_CV) <- paste(grpnames)
-      # rownames(freqs_PRED_CV) <- paste(grpnames)
+      colnames(freqs_PRED_CV) <- paste(grpnames)
+      rownames(freqs_PRED_CV) <- paste(grpnames)
+
+      chi_square_PRED_CV <- summary(freqs_PRED_CV)
       
-      # chi_square_PRED_CV <- summary(freqs_PRED_CV)
+      PressQ_PRED_CV <- PressQ(freqs_PRED_CV)
       
-      # PressQ_PRED_CV <- PressQ(freqs_PRED_CV)
-      
-      # kappas_PRED_CV <- kappas(var1 = classes_PRED$dfa_class, var2 = classes_CV, grpnames)
+      kappas_PRED_CV <- kappas(var1 = classes_PRED$dfa_class, var2 = classes_CV, grpnames)
       
     }
     
-    DFAoutput$classes_PRED <- classes_PRED$dfa_class
+    
+     DFAoutput$classes_PRED <- classes_PRED$dfa_class
     if (CV) DFAoutput$classes_CV <- classes_CV
+    if (covmat_type == 'within') {
+      DFAoutput$classifcoefs <- classes_PRED$classifcoefs
+      DFAoutput$classifints  <- classes_PRED$classifints
+    }
     DFAoutput$posteriors <- classes_PRED$posteriors 
     DFAoutput$grp_post_stats <- grp_post_stats
     DFAoutput$freqs_ORIG_PRED <- freqs_ORIG_PRED
@@ -487,11 +492,11 @@ DFA <- function(data, groups, variables, plot=TRUE,
     DFAoutput$kappas_ORIG_PRED <- kappas_ORIG_PRED
     DFAoutput$PropOrigCorrect <- PropOrigCorrect
     
-    # DFAoutput$rowfreqs_ORIG_PRED <- rowfreqs_ORIG_PRED
-    # DFAoutput$colfreqs_ORIG_PRED <- colfreqs_ORIG_PRED
-    # DFAoutput$cellprops_ORIG_PRED <- cellprops_ORIG_PRED
-    # DFAoutput$rowprops_ORIG_PRED <- rowprops_ORIG_PRED
-    # DFAoutput$colprops_ORIG_PRED <- colprops_ORIG_PRED
+    DFAoutput$rowfreqs_ORIG_PRED <- rowfreqs_ORIG_PRED
+    DFAoutput$colfreqs_ORIG_PRED <- colfreqs_ORIG_PRED
+    DFAoutput$cellprops_ORIG_PRED <- cellprops_ORIG_PRED
+    DFAoutput$rowprops_ORIG_PRED <- rowprops_ORIG_PRED
+    DFAoutput$colprops_ORIG_PRED <- colprops_ORIG_PRED
     
     
     DFAoutput$freqs_ORIG_CV <- freqs_ORIG_CV
@@ -500,16 +505,16 @@ DFA <- function(data, groups, variables, plot=TRUE,
     DFAoutput$kappas_ORIG_CV <- kappas_ORIG_CV
     DFAoutput$PropCrossValCorrect <- PropCrossValCorrect
     
-    # DFAoutput$rowfreqs_ORIG_CV <- rowfreqs_ORIG_CV
-    # DFAoutput$colfreqs_ORIG_CV <- colfreqs_ORIG_CV
-    # DFAoutput$cellprops_ORIG_CV <- cellprops_ORIG_CV
-    # DFAoutput$rowprops_ORIG_CV <- rowprops_ORIG_CV
-    # DFAoutput$colprops_ORIG_CV <- colprops_ORIG_CV
+    DFAoutput$rowfreqs_ORIG_CV <- rowfreqs_ORIG_CV
+    DFAoutput$colfreqs_ORIG_CV <- colfreqs_ORIG_CV
+    DFAoutput$cellprops_ORIG_CV <- cellprops_ORIG_CV
+    DFAoutput$rowprops_ORIG_CV <- rowprops_ORIG_CV
+    DFAoutput$colprops_ORIG_CV <- colprops_ORIG_CV
     
-    # DFAoutput$freqs_PRED_CV <- freqs_PRED_CV
-    # DFAoutput$chi_square_PRED_CV <- chi_square_PRED_CV
-    # DFAoutput$PressQ_PRED_CV <- PressQ_PRED_CV
-    # DFAoutput$kappas_PRED_CV <- kappas_PRED_CV
+    DFAoutput$freqs_PRED_CV <- freqs_PRED_CV
+    DFAoutput$chi_square_PRED_CV <- chi_square_PRED_CV
+    DFAoutput$PressQ_PRED_CV <- PressQ_PRED_CV
+    DFAoutput$kappas_PRED_CV <- kappas_PRED_CV
     
   }
   

@@ -6,6 +6,8 @@
         plot_type ='bar', bar_type = 'all',
         rescale='standardize',
         CI_level= 95, ylim=NULL,
+        plot_save = FALSE, plot_save_type = 'png', plot_title = NULL,
+        cols_user = NULL,
         verbose=TRUE)}
 \arguments{
   \item{data}{
@@ -38,6 +40,24 @@
   \item{ylim}{
   \code{}(optional) Limits for the y-axis, e.g., ylim = c(0, 5). Not implemented when multiple
   bar plots are requested.}
+
+  \item{plot_save}{
+  \code{}Should a plot be saved to disk? TRUE or FALSE (the default).}
+
+  \item{plot_save_type}{
+  \code{}The output format if plot_save = TRUE. The options are 'bitmap', 'tiff', 
+         'png' (the default), 'jpeg', and 'bmp'.}
+
+  \item{plot_title}{
+  \code{}(optional) A title for the plot. 
+  \cr Example: title = 'Group Profiles'}
+
+  \item{cols_user}{
+  \code{}A vector of colours for the groups. 
+  \cr If NULL, the default colours are selected, in order, from this vector: 
+   cols_user <- c('blue', 'red', 'cyan2', 'darkviolet', 'chartreuse1', 'yellow',
+              'burlywood3','darkseagreen1', 
+              'mediumvioletred', 'darkgreen','bisque','cyan3', 'deeppink4').}
 
   \item{verbose}{
   \code{}(optional) Should detailed results be displayed in console? \cr The options 

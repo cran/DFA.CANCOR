@@ -77,8 +77,13 @@ GROUP.DIFFS <-  function (data, GROUPS = NULL, DV = NULL, var.equal = FALSE,
       # Bayes factor -- http://daniellakens.blogspot.com/2014/09/bayes-factors-and-p-values-for.html
       # Bayes factors from just t & Ns
       # BF_h0h1 <- exp(suppressMessages( ttest.tstat(tgroups, N1, N2, rscale=Bayes_rscale)$bf))
-      BF_h0h1_stat <- suppressMessages( ttest.tstat(tgroups, N1, N2, simple=TRUE))
-      BF_h1h0_stat <- 1 / BF_h0h1_stat
+
+      # BF_h0h1_stat <- suppressMessages( ttest.tstat(tgroups, N1, N2, simple=TRUE))
+      # BF_h1h0_stat <- 1 / BF_h0h1_stat
+      
+      BF_h1h0_stat <- suppressMessages( ttest.tstat(tgroups, N1, N2, simple=TRUE))
+      BF_h0h1_stat <- 1 / BF_h1h0_stat
+      
       
       if (!MCMC) {
         results <- cbind(lupe1, N1, MNgrp1, SDgrp1, lupe2, N2, MNgrp2, SDgrp2,
@@ -104,8 +109,13 @@ GROUP.DIFFS <-  function (data, GROUPS = NULL, DV = NULL, var.equal = FALSE,
         Bayes_d_ci_ub <- quantile(chains[,2], probs = quant_ub)
         
         # Bayes factors from raw data analyses
-        BF_h0h1_raw <- extractBF(Bayes_post)[1]
-        BF_h1h0_raw <- 1 / BF_h0h1_raw
+        
+        # BF_h0h1_raw <- extractBF(Bayes_post)[1]
+        # BF_h1h0_raw <- 1 / BF_h0h1_raw
+        
+        BF_h1h0_raw <- extractBF(Bayes_post)[1]
+        BF_h0h1_raw <- 1 / BF_h1h0_raw
+        
         
         results <- cbind(lupe1, N1, MNgrp1, SDgrp1, lupe2, N2, MNgrp2, SDgrp2,
                          tgroups, dfgroups, plevel, plevel.adj, 

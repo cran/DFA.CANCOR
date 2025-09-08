@@ -1,8 +1,8 @@
 Package: DFA.CANCOR
 Type: Package
 Title: Linear Discriminant Function and Canonical Correlation Analysis
-Version: 0.3.8
-Date: 2025-05-29
+Version: 0.3.9
+Date: 2025-09-07
 Authors@R: person(given = c("Brian", "P."), 
                   family = "O'Connor", 
                   role =c("aut","cre"), 
@@ -21,6 +21,6 @@ LazyLoad: yes
 LazyData: yes
 License: GPL (>= 2)
 NeedsCompilation: no
-Packaged: 2025-05-29 09:37:39 UTC; brianoconnor
+Packaged: 2025-09-07 23:21:43 UTC; brianoconnor
 Repository: CRAN
-Date/Publication: 2025-05-29 10:00:02 UTC
+Date/Publication: 2025-09-08 07:20:26 UTC
