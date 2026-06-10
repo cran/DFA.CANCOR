@@ -44,7 +44,7 @@ DESCRIPTIVES <- function(data, groups=NULL, variables=NULL, CI_level=95, verbose
   if (!is.null(groups)) {
     
     grpnames <- as.vector(as.matrix(donnes[,1])) # group names, in the same order as in data
-    grpnames <- unique(grpnames)
+    grpnames <- unique(na.omit(grpnames))
     grpnums  <- seq(1:length(grpnames))
     Ngroups  <- length(grpnames)
     
@@ -55,7 +55,7 @@ DESCRIPTIVES <- function(data, groups=NULL, variables=NULL, CI_level=95, verbose
       
       grpnom <- paste(grpnames[lupeg])
       
-      DESCR_grps[[grpnom]] <- descriptives_boc(data = dum[,2:ncol(dum)], 
+      DESCR_grps[[grpnom]] <- descriptives_boc(data = dum[,2:ncol(dum), drop=FALSE], 
                                                variables=colnames(dum)[2:ncol(dum)], CI_level=CI_level) 
       
       if (verbose) {		

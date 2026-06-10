@@ -1,5 +1,18 @@
 
 
+
+
+# function to expand (y-axis plot) limits by a percentage (e.g., 10%)
+better_ylim <- function(y, buffer = 0.1) {
+  r <- range(y, na.rm = TRUE)
+  diff <- diff(r)
+  return(c(r[1] - diff * buffer, r[2] + diff * buffer))
+}
+
+
+
+
+
 DFC_post_class_stats <- function (DFAposteriors, grpnames, Ngroups, groupNs, verbose=FALSE) {
 
 	Group <- NULL # to avoid a "no visible binding for global variable 'Group'" warning

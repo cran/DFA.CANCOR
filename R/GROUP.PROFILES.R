@@ -12,8 +12,8 @@ GROUP.PROFILES <- function(data, groups, variables,
   donnes <- data  
   
   donnes <- donnes[,c(groups,variables)]
-  donnes <- donnes[order(donnes[,1]),]
-  
+  donnes <- donnes[order(donnes[[groups]]),]
+
   # group names, in the same order as in the data matrix
   grpnames <- as.vector(as.matrix(na.omit(donnes[,groups]))) 
   grpnames <- unique(grpnames)
@@ -23,7 +23,6 @@ GROUP.PROFILES <- function(data, groups, variables,
   
   # the critical z value (that corresponds to the specified CI) to be used in the CI computations
   zforCI <- qnorm((1 + CI_level * .01) / 2) 
-  
   
   
   oldpar <- par(no.readonly = TRUE)
@@ -53,6 +52,10 @@ GROUP.PROFILES <- function(data, groups, variables,
       bmp(paste('Figure - ',plot_title,'.bmp',sep=''), height=height, width=width, units='in', res=1200, pointsize=12)
   }
   
+  
+  # rescale
+  if (rescale == 'standardize')  donnes[, variables] <- scale(donnes[, variables])
+
   desdat <- DESCRIPTIVES(data=donnes, groups=groups, variables=variables, verbose=FALSE)
   
   MNs <- CIs_lb <- CIs_ub <- ymin <- ymax <- c()
@@ -79,10 +82,12 @@ GROUP.PROFILES <- function(data, groups, variables,
     if (bar_type == 'all') {
       
       if (is.null(ylim)) ylim <- c(min(ymin), max(ymax))
-
-      # if (is.null(ylim)) ylim <- range( pretty(CIs_lb), pretty(CIs_ub))
       
-      # ylim[2] <- ylim[2] + (ylim[2] * .05)
+      ylim <- c(min(MNs), max(MNs))
+      
+      ylim <- better_ylim(ylim, buffer = 0.15)
+      
+      # if (is.null(ylim)) ylim <- range( pretty(CIs_lb), pretty(CIs_ub))
       
       plot_bar <- barplot(t(MNs), beside=TRUE, legend.text=FALSE, col=cols[1:Nvars], 
                           ylim=ylim, ylab='DV', yaxt='n', main=plot_title, xpd=FALSE) #, axes=FALSE) 
@@ -91,12 +96,14 @@ GROUP.PROFILES <- function(data, groups, variables,
       
       axis(side=2, at=yyy, labels=yyy, las=1)
       
-      arrows(plot_bar, t(CIs_ub), plot_bar, t(CIs_lb), 
-             lwd = 1.0, angle = 90, code = 3, length = 0.05)
+      if ( (min(CIs_lb) > ylim[1]) & (max(CIs_lb) < ylim[2]) ) {
+        suppressWarnings(arrows(plot_bar, t(CIs_ub), plot_bar, t(CIs_lb), 
+               lwd = 1.0, angle = 90, code = 3, length = 0.05))
+      }
       
-      graphics::legend('top', legend = variables, bty='n', lwd=2, col=cols, cex = .80)
-    }
-    
+    graphics::legend('top', legend = variables, bty='n', lwd=2, col=cols, cex = .80)
+  }
+  
     if(bar_type == 'separate') {
       
       # if (nrow(activeSet_ALL) >  1)  par(mfrow=c(1,1), pty='m', mar=c(3,2,3,2) + 2.6, ask=TRUE)
@@ -120,9 +127,13 @@ GROUP.PROFILES <- function(data, groups, variables,
       
       for (lupe in 1:Nplots)  {
         
-        # ylim <- range( pretty(CIs_lb[,lupe]), pretty(CIs_ub[,lupe]))
+        if (is.null(ylim)) ylim <- c(min(ymin), max(ymax))
         
-        ylim <- c(min(ymin[,lupe]), max(ymax[,lupe]))
+        ylim <- c(min(MNs), max(MNs))
+        
+        ylim <- better_ylim(ylim, buffer = 0.15)
+        
+        # if (is.null(ylim)) ylim <- range( pretty(CIs_lb), pretty(CIs_ub))
         
         plot_bar <- barplot(t(MNs[,lupe]), beside=T, legend.text=FALSE, col=cols[1:Ngroups], 
                             ylim=ylim, ylab='DV', yaxt='n', xpd=FALSE) #, axes=FALSE) 
@@ -131,9 +142,11 @@ GROUP.PROFILES <- function(data, groups, variables,
         
         axis(side=2, at=yyy, labels=yyy, las=1)
         
-        arrows(plot_bar, t(CIs_ub[,lupe]), plot_bar, t(CIs_lb[,lupe]), 
-               lwd = 1.0, angle = 90, code = 3, length = 0.05)
-        
+        if ( (min(CIs_lb[,lupe]) > ylim[1]) & (max(CIs_lb[,lupe]) < ylim[2]) ) {
+          suppressWarnings(arrows(plot_bar, t(CIs_ub[,lupe]), plot_bar, t(CIs_lb[,lupe]), 
+                 lwd = 1.0, angle = 90, code = 3, length = 0.05))
+        }
+
         graphics::title(main= paste('Group Means for',variables[lupe]))
         
         eval(parse(text=(paste('pp', lupe, ' <- recordPlot()', sep=''))))
@@ -151,7 +164,8 @@ GROUP.PROFILES <- function(data, groups, variables,
     # par(font.main=1, font.lab=1, font.axis=1, cex=1, cex.main=1, cex.lab=1, cex.axis=1,
     #     lwd=2, las=1,  pty='s',  mai=c(.8,.8,.8,.8) ) 
     
-    if (is.null(ylim))  ylim <- range( min(pretty(min(MNs))), max(pretty(max(MNs))) )
+    # if (is.null(ylim))  ylim <- range( min(pretty(min(MNs))), max(pretty(max(MNs))) )
+    if (is.null(ylim))  ylim <- range( min(MNs), max(MNs) )
     
     graphics::matplot(1:Ngroups, MNs, type = 'l', lty=1, lwd=3, 
                       xaxt='n', xlab='', cex.axis=1.2, cex.lab = 1.3,
@@ -176,7 +190,7 @@ GROUP.PROFILES <- function(data, groups, variables,
       
       cat('\n\nThe confidence interval for the output: ', CI_level, '%', sep='')
       
-      cat('\n\nThe rescale variables argument was set to:', rescale)
+      cat('\n\nThe rescale argument was set to:', rescale, '\n')
       
       for (lupe in 1:length(desdat$DESCR_vars)) {
         cat('\n\n', colnames(MNs)[lupe], '\n')

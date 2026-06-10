@@ -89,7 +89,7 @@ umvn <- function(data) {
   skewP  <- pnorm(abs(skewZ), lower.tail=FALSE) * 2     # 2-tailed sig test
   
   kurtosisSE <- sqrt(24 / descriptives$n)
-  kurtosisZ  <- descriptives$Kurtosis / kurtosisSE	
+  kurtosisZ  <- (3 - descriptives$Kurtosis) / kurtosisSE	  # thank you Erik
   kurtosisP  <- pnorm(abs(kurtosisZ), lower.tail=FALSE) * 2     # 2-tailed sig test
   
   descriptives <- cbind(descriptives[,c(1:6,9)], skewZ, skewP, descriptives$Kurtosis, kurtosisZ, kurtosisP)
@@ -107,3 +107,5 @@ umvn <- function(data) {
   return(invisible(output))
   
 }
+
+

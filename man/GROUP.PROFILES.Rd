@@ -30,8 +30,7 @@
 
   \item{rescale}{
   \code{}(optional) Should the variables be rescaled into a common metric? The options
-  are 'no' (the default), 'standardize', or 'data', in which case rescaling will be
-  done using the data variables (see the Details below).}
+  are 'no' (the default), or 'standardize'.}
 
   \item{CI_level}{
   \code{}(optional) The confidence interval for the input, if provided (in whole numbers). 
@@ -63,10 +62,9 @@
   \code{}(optional) Should detailed results be displayed in console? \cr The options 
   are: TRUE (default) or FALSE.}
 }
-\details{The continuous 'variables' can be rescaled into the same metric, to facilitate
-  interpretation when the means for multiple variables are placed on one plot.
-  The variables can be standardized, or they can be rescaled using the minimum and
-  maximum values in the data variables as the new range for the rescaled variables.
+\details{The continuous 'variables' can be rescaled (standardized) into the same 
+  metric to facilitate interpretation when the variables that are in
+  different metrics are placed on one plot.
 
   When plot_type = 'bar' and bar_type = 'separate', a maximum of four plots will be 
   produced, for the first four 'variables'.

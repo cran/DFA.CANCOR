@@ -56,7 +56,7 @@ GROUP.DIFFS <-  function (data, GROUPS = NULL, DV = NULL, var.equal = FALSE,
       
       # confidence intervals for the mean difference
       mdiff <- MNgrp1 - MNgrp2
-      ci=tresults$conf.int
+      ci <- tresults$conf.int
       ci.lb <- unlist(ci)[1]
       ci.ub <- unlist(ci)[2]
       
@@ -88,8 +88,8 @@ GROUP.DIFFS <-  function (data, GROUPS = NULL, DV = NULL, var.equal = FALSE,
       if (!MCMC) {
         results <- cbind(lupe1, N1, MNgrp1, SDgrp1, lupe2, N2, MNgrp2, SDgrp2,
                          tgroups, dfgroups, plevel, plevel.adj, 
-                         mdiff, ci.lb, ci.ub, deffsize, geffsize, reffsize, 
-                         besd, BF_h1h0_stat, BF_h0h1_stat)
+                         mdiff, ci.lb, ci.ub, deffsize, geffsize, reffsize, besd, 
+                         BF_h1h0_stat, BF_h0h1_stat)
       }
       
       if (MCMC) {
